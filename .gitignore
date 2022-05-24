@@ -17,6 +17,9 @@
 # Output files from R CMD check
 /*.Rcheck/
 
+# Output files from target
+_targets/
+
 # RStudio files
 .Rproj.user/
 
@@ -37,3 +40,26 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# data files
+*.csv
+*.xlsx
+*.bib
+*.pdf
+*data/
+
+# output files
+*.docx
+*.tex
+*.log
+*.pdf
+
+# output files
+*.jpeg
+*.jpg
+*.png
+
+# markdown
+*.html
+*.log
+*.md
