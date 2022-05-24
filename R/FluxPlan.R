@@ -1,0 +1,52 @@
+# Flux plan
+
+FluxPlan <- list(
+
+  # Calculate GPP
+  tar_target(
+    name = ITEX.data.post.calcs,
+    command = calc_GPP(ITEX.data.pre.calcs)
+  ),
+
+  # Standardize fluxes
+  tar_target(
+    name = Standard_Fluxes,
+    command = standardize_fluxes(CommResp, Height, ITEX.data.post.calcs)
+  ),
+
+  # Join with traits
+  tar_target(
+    name = Flux_and_Traits,
+    command = flux_and_trait(Trait_Mean, Standard_Fluxes)
+  ),
+
+  # Fig S9 Effect size plot
+  tar_target(
+    name = Fig_S9_Effect_size,
+    command = make_effect_size_figure(Flux_and_Traits)
+  ),
+
+  # Model selection
+  tar_target(
+    name = Trait_Model_Output,
+    command = trait_model_selelction(Flux_and_Traits)
+  ),
+
+  tar_target(
+    name = Model_Output,
+    command = model_selection(Flux_and_Traits)
+  ),
+
+  # results
+  tar_target(
+    name = Results_Model_Selection,
+    command = model_selection_results(Flux_and_Traits)
+  ),
+
+  # Fig 5 Flux Figure
+  tar_target(
+    name = Fig_5_Fluxes,
+    command = make_flux_figure(Trait_Model_Output, Model_Output)
+  )
+
+)
