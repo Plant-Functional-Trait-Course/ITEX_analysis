@@ -36,6 +36,19 @@ FigurePlan <- list(
 
   ### Trait Figures
 
+  # Fig 2 Trait mean
+  tar_target(
+    name = Fig_2_trait_mean,
+    command = make_trait_mean_figure(Anova_Trait_Tidy, Trait_Mean)
+  ),
+
+  # Fig 3 Specific vs fixed mean ITV
+  tar_target(
+    name = Fig_3_specific_fixed,
+    command = make_itv_figure(Trait_Mean)
+  ),
+
+
   # Fig S5 Trait PCA
   tar_target(
     name = Fig_2_pca_plot,
@@ -61,25 +74,14 @@ FigurePlan <- list(
 
   ),
 
-  # Fig 3 Trait mean
+  # Fig S6 Intra vs. turnover
   tar_target(
-    name = Fig_3_trait_mean,
-    command = make_trait_mean_figure(Anova_Trait_Tidy, Trait_Mean)
-  ),
-
-  # Fig 4 ITV
-  tar_target(
-    name = Fig_4_itv_plot,
-    command = make_itv_figure(Trait_Mean)
-  ),
-
-  # Fig S7 Inter vs intra
-  tar_target(
-    name = Fig_S7_varpart_graph,
+    name = Fig_S6_varpart,
     command = make_intra_vs_inter_figure(Var_Split_Exp, Var_Split)
   ),
 
-  # Climate plot
+
+  ##  Climate figure ##
   tar_target(
     name = Fig_S1_ClimatePlot,
     command = make_climate_figure(Monthly_Temp, Daily_Climate)

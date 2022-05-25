@@ -15,6 +15,14 @@ tar_option_set(packages = c("dataDownloader", "tidyverse", "lubridate", "readxl"
 tar_load(Fig_1_CommunityOrdination)
 ggsave("output/Fig_1_NMDS.png", Fig_1_CommunityOrdination, dpi = 300, height = 2.5, width = 6)
 
+# Fig 2 Trait mean
+tar_load(Fig_2_trait_mean)
+ggsave("output/Fig_2_trait_mean.png", Fig_2_trait_mean, dpi = 300, height = 6, width = 8)
+
+# Fig 3 Specific - fixed mean
+tar_load(Fig_3_specific_fixed)
+ggsave("output/Fig_3_specific_fixed.png", Fig_3_specific_fixed, dpi = 300, height = 6, width = 8)
+
 
 ## Appendix
 
