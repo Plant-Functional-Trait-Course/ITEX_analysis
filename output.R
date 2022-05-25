@@ -2,6 +2,7 @@
 library(targets)
 library(tarchetypes)
 library(tidyverse)
+library(lubridate)
 library(vegan)
 library(ggvegan)
 library(patchwork)
@@ -16,6 +17,10 @@ ggsave("output/Fig_1_NMDS.png", Fig_1_CommunityOrdination, dpi = 300, height = 2
 
 
 ## Appendix
+
+# Fig S1 Climate
+tar_load(Fig_S1_ClimatePlot)
+ggsave("output/Fig_S1_climate.png", Fig_S1_ClimatePlot, dpi = 300, height = 6, width = 8)
 
 # Fig S2 PCA
 tar_load(Fig_2_pca_plot)

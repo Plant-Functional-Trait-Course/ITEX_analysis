@@ -81,7 +81,7 @@ FigurePlan <- list(
 
   # Climate plot
   tar_target(
-    name = Fig_S1_FinalClimatePlot,
+    name = Fig_S1_ClimatePlot,
     command = make_climate_figure(Monthly_Temp, Daily_Climate)
   )
 
