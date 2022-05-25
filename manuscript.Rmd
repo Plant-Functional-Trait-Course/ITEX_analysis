@@ -1,0 +1,51 @@
+---
+title: Intraspecific trait variability is a key feature underlying high Arctic plant community resilience to climate warming
+author:
+  - name: Ingibjörg S. Jónsdóttir et al.
+
+output:
+  bookdown::pdf_book:
+     base_format: 
+       rticles::plos_article
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, include = TRUE, warning = TRUE, message = TRUE, error = TRUE)
+
+#packages only loaded in this file
+library("english")
+
+#set default theme
+theme_set(theme_bw())
+
+# load required targets
+tar_load(Fig_2_pca_plot)
+
+```
+
+
+# Main Figures and tables
+
+
+
+
+```{r div-results, eval=FALSE}
+
+diversity_analysis %>% 
+  select(term, estimate:p.value)
+  kbl(booktabs = TRUE,
+      digits = 2) %>% 
+    pack_rows("Richness", 1, 4) %>%
+    pack_rows("Diversity", 5, 8) %>%
+    pack_rows("Evenness", 9, 12) %>%
+    pack_rows("Sum abundnace", 13, 16)
+
+```
+
+
+# Appendix
+
+
+```{r s5-pca, fig.cap = "xxx"}
+tar_read(Fig_2_pca_plot)
+```

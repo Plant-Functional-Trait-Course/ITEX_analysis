@@ -31,6 +31,14 @@ source("R/Functions/Climate_analyses.R")
 source("R/Functions/Flux_analyses.R")
 source("R/Functions/Flux_figures.R")
 
+# render ms
+ManuscriptPlan <- list(
+
+  #render manuscript
+  tar_render(name = ms, path = "manuscript.Rmd")
+
+
+)
 
 ### COMBINE TARGETS PLANS
 combined_plan <- c(
@@ -38,7 +46,8 @@ combined_plan <- c(
   DataImportPlan,
   AnalysisPlan,
   FigurePlan,
-  FluxPlan
+  FluxPlan,
+  ManuscriptPlan
 )
 
 #return combined plan
