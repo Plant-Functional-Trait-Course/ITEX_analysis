@@ -2,7 +2,7 @@
 
 FigurePlan <- list(
 
-  # Community Figures
+  ### Community Figures
 
   # Fig 1 NMDS ordination
   tar_target(
@@ -10,32 +10,33 @@ FigurePlan <- list(
     command = make_ordination(NMDS_output)
   ),
 
-
-  # Fig 1 metric change
+  # Fig S3 metric change
   tar_target(
-    name = Fig_1_metric_change,
+    name = Fig_S3_metric_change,
     command = community_metrics_figure(Comm_Anova_tidy, Comm_Metric_Change, Comm_t_Test)
   ),
 
-  # Fig S4 metric change supplement
+  # Fig S4 Canopy Height
   tar_target(
-    name = Fig_S4_metric_change_supp,
-    command = community_metrics_figure_supp(Comm_Anova_tidy, Comm_Metric_Change, Comm_t_Test_Supp)
-  ),
-
-  # Fig S5 metric change over time
-  tar_target(
-    name = Fig_S5_metric_time,
-    command = metric_time_figure(CommResp)
-  ),
-
-  # Fig S6 Height
-  tar_target(
-    name = Fig_S6_CanopyHeight,
+    name = Fig_S4_CanopyHeight,
     command = make_height_figure(Height)
   ),
 
-  # Fig 2 Trait PCA
+  # Fig S4 metric change supplement
+  # tar_target(
+  #   name = Fig_S4_metric_change_supp,
+  #   command = community_metrics_figure_supp(Comm_Anova_tidy, Comm_Metric_Change, Comm_t_Test_Supp)
+  # ),
+
+  # Fig S5 metric change over time
+  # tar_target(
+  #   name = Fig_S5_metric_time,
+  #   command = metric_time_figure(CommResp)
+  # ),
+
+  ### Trait Figures
+
+  # Fig S5 Trait PCA
   tar_target(
     name = Fig_2_pca_plot,
     command = {
