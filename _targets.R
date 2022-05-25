@@ -5,7 +5,6 @@
 ### LOAD LIBRARIES
 library("targets")
 library("tarchetypes")
-library(tidyverse)
 # install.packages("remotes")
 #remotes::install_github("Between-the-Fjords/dataDownloader")
 tar_option_set(packages = c("dataDownloader", "tidyverse", "lubridate", "readxl", "traitstrap", "vegan", "ggvegan", "broom", "patchwork", "ape", "nlme", "lme4", "broom.mixed", "MuMIn", "ggpubr", "ggfortify", "ggpattern"))
@@ -32,13 +31,10 @@ source("R/Functions/Flux_analyses.R")
 source("R/Functions/Flux_figures.R")
 
 # render ms
-ManuscriptPlan <- list(
-
-  #render manuscript
-  tar_render(name = ms, path = "manuscript.Rmd")
-
-
-)
+# ManuscriptPlan <- list(
+#   #render manuscript
+#   tar_render(name = ms, path = "manuscript.Rmd")
+# )
 
 ### COMBINE TARGETS PLANS
 combined_plan <- c(
@@ -46,8 +42,8 @@ combined_plan <- c(
   DataImportPlan,
   AnalysisPlan,
   FigurePlan,
-  FluxPlan,
-  ManuscriptPlan
+  FluxPlan
+  #ManuscriptPlan
 )
 
 #return combined plan
