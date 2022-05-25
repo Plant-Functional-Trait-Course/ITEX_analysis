@@ -51,7 +51,7 @@ FigurePlan <- list(
 
   # Fig S5 Trait PCA
   tar_target(
-    name = Fig_2_pca_plot,
+    name = Fig_5_pca_plot,
     command = {
 
       pDCS <- make_trait_pca_figure(trait_pca_all[[3]], trait_pca_all[[1]],
@@ -67,7 +67,9 @@ FigurePlan <- list(
                                  col = "blue",
                                  tag = "D")
 
-     pDCS / (pS | pC | pD) + plot_layout(height = c(3, 1))
+     PCA <- pDCS / (pS | pC | pD) + plot_layout(height = c(3, 1))
+
+     return(PCA)
 
     }
 
