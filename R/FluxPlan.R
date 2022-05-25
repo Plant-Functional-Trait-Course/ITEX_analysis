@@ -20,11 +20,6 @@ FluxPlan <- list(
     command = flux_and_trait(Trait_Mean, Standard_Fluxes)
   ),
 
-  # Fig S9 Effect size plot
-  tar_target(
-    name = Fig_S9_Effect_size,
-    command = make_effect_size_figure(Flux_and_Traits)
-  ),
 
   # Model selection
   tar_target(
@@ -43,10 +38,30 @@ FluxPlan <- list(
     command = model_selection_results(Flux_and_Traits)
   ),
 
-  # Fig 5 Flux Figure
+  # Fig 4 Flux Figure
   tar_target(
-    name = Fig_5_Fluxes,
+    name = Fig_4_Fluxes,
     command = make_flux_figure(Trait_Model_Output, Model_Output)
+  ),
+
+  # Fig S2 Microclimate
+  tar_target(
+    name = Fig_S2_Microclimate,
+    command = make_soil_microclimate_figure(Flux_and_Traits)
+  ),
+
+  # Fig S7 Mean fluxes
+  tar_target(
+    name = Fig_S7_Mean_fluxes,
+    command = make_flux_mean_figures(Flux_and_Traits)
+  ),
+
+  # Fig S8 Effect size plot
+  tar_target(
+    name = Fig_S8_Effect_size,
+    command = make_effect_size_figure(Flux_and_Traits)
   )
+
+
 
 )
