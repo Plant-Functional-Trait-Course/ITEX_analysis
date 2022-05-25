@@ -3,6 +3,14 @@
 FigurePlan <- list(
 
   # Community Figures
+
+  # Fig 1 NMDS ordination
+  tar_target(
+    name = Fig_1_CommunityOrdination,
+    command = make_ordination(NMDS_output)
+  ),
+
+
   # Fig 1 metric change
   tar_target(
     name = Fig_1_metric_change,
@@ -21,12 +29,6 @@ FigurePlan <- list(
     command = metric_time_figure(CommResp)
   ),
 
-  # Fig S3 NMDS ordination
-  tar_target(
-    name = Fig_S3_CommunityOrdination,
-    command = make_ordination(NMDS_output)
-  ),
-
   # Fig S6 Height
   tar_target(
     name = Fig_S6_CanopyHeight,
@@ -36,7 +38,26 @@ FigurePlan <- list(
   # Fig 2 Trait PCA
   tar_target(
     name = Fig_2_pca_plot,
-    command = make_trait_pca_figure(trait_pca_info, pca_res)
+    command = {
+
+      pDCS <- make_trait_pca_figure(trait_pca_all[[3]], trait_pca_all[[1]],
+                                    col = c("blue", "forestgreen", "orange"),
+                                    tag = "A")
+     pD <- make_trait_pca_figure(trait_pca_DH[[3]], trait_pca_DH[[1]],
+                                 col = "orange",
+                                 tag = "B")
+     pC <- make_trait_pca_figure(trait_pca_CH[[3]], trait_pca_CH[[1]],
+                                 col = "forestgreen",
+                                 tag = "C")
+     pS <- make_trait_pca_figure(trait_pca_SB[[3]], trait_pca_SB[[1]],
+                                 col = "blue",
+                                 tag = "D")
+
+     pDCS / (pS | pC | pD) + plot_layout(height = c(3, 1))
+
+    }
+
+
   ),
 
   # Fig 3 Trait mean

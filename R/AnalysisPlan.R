@@ -2,6 +2,19 @@
 
 AnalysisPlan <- list(
 
+
+  # NMDS ordination and results
+  tar_target(
+    name = NMDS_output,
+    command = nmds_ordination(Community)
+  ),
+
+  tar_target(
+    name = NMDS_result,
+    command = NMDS_analysis(NMDS_output)
+  ),
+
+
   # diversity indices
   tar_target(
     name = CommResp,
@@ -45,19 +58,6 @@ AnalysisPlan <- list(
   ),
 
 
-
-  # NMDS ordination and results
-  tar_target(
-    name = NMDS_output,
-    command = nmds_ordination(Community)
-  ),
-
-  tar_target(
-    name = NMDS_result,
-    command = NMDS_analysis(NMDS_output)
-  ),
-
-
   # Canopy height
   tar_target(
     name = Height_result,
@@ -72,51 +72,96 @@ AnalysisPlan <- list(
   ),
 
   # Trait PCA
-  # make data wide
   tar_target(
-    name = trait_pca,
-    command = Trait_Mean %>%
-      select(-mean_noitv) %>%
-      mutate(Trait = plyr::mapvalues(Trait, from = c("SLA_cm2_g", "LDMC", "Leaf_Area_cm2", "Leaf_Thickness_mm", "N_percent", "C_percent", "P_Ave", "CN_ratio", "dC13_percent", "dN15_percent", "Dry_Mass_g", "Plant_Height_cm"), to = c("SLA", "LDMC", "Leaf Area", "Leaf Thickness", "%N", "%C", "%P", "C:N", "delta13C", "delta15N", "Dry Mass", "Plant Height"))) %>%
-      pivot_wider(names_from = Trait, values_from = mean)
-  ),
+    name = trait_pca_all,
+    command = make_trait_pca(Trait_Mean)
 
-  # select traits
-  tar_target(
-    name = trait_pca_data,
-    command = trait_pca %>%
-      select("%C":"SLA")
   ),
-
-  # meta data
-  tar_target(
-    name = trait_pca_info,
-    command = trait_pca %>%
-      select(Site:Treatment)
-  ),
-
-  # make pca
-  tar_target(
-    name = pca_res,
-    command = prcomp(trait_pca_data, center = T, scale. = T)
-  ),
-
 
   #PERMANOVA of PCA groups
-  tar_target(
-    name = pca_test,
-    command = cbind(trait_pca_info, pca_res$x) %>%
-      rename("Habitat" = "Site") %>%
-      group_by(Habitat, Treatment) %>%
-      select(-Site_trt, -Year, -Treatment, -PlotID)
-  ),
-
 
   tar_target(
     name = perm,
-    command = adonis(pca_test[c(3:14)] ~ pca_test$Treatment * pca_test$Habitat, method='eu')
+    command = {
+
+      pca_test <- cbind(trait_pca_all[[3]], trait_pca_all[[2]]) %>%
+        rename("Habitat" = "Site") %>%
+        group_by(Habitat, Treatment) %>%
+        select(-Site_trt, -Year, -Treatment, -PlotID)
+
+      adonis(pca_test[c(3:14)] ~ pca_test$Treatment * pca_test$Habitat, method='eu')
+
+    }
   ),
 
+  ### PCA per habitat
+  # Dryas
+  tar_target(
+    name = trait_pca_DH,
+    command = make_trait_pca(Trait_Mean |>
+                               filter(Site == "DH"))
+
+  ),
+
+  tar_target(
+    name = trait_pca_DH_test,
+    command = {
+
+      pca_test <- cbind(trait_pca_DH[[3]], trait_pca_DH[[2]]) %>%
+        group_by(Treatment) %>%
+        select(-Site_trt, -Year, -Site, -Treatment, -PlotID)
+
+      adonis(pca_test[c(2:11)] ~ pca_test$Treatment, method='eu')
+
+    }
+
+  ),
+
+
+  # Cassiope
+  tar_target(
+    name = trait_pca_CH,
+    command = make_trait_pca(Trait_Mean |>
+                               filter(Site == "CH"))
+
+  ),
+
+  tar_target(
+    name = trait_pca_CH_test,
+    command = {
+
+      pca_test <- cbind(trait_pca_CH[[3]], trait_pca_CH[[2]]) %>%
+        group_by(Treatment) %>%
+        select(-Site_trt, -Year, -Site, -Treatment, -PlotID)
+
+      adonis(pca_test[c(2:7)] ~ pca_test$Treatment, method='eu')
+
+    }
+
+  ),
+
+  # Snowbed
+  tar_target(
+    name = trait_pca_SB,
+    command = make_trait_pca(Trait_Mean |>
+                               filter(Site == "SB"))
+
+  ),
+
+
+  tar_target(
+    name = trait_pca_SB_test,
+    command = {
+
+      pca_test <- cbind(trait_pca_SB[[3]], trait_pca_SB[[2]]) %>%
+        group_by(Treatment) %>%
+        select(-Site_trt, -Year, -Site, -Treatment, -PlotID)
+
+      adonis(pca_test[c(2:11)] ~ pca_test$Treatment, method='eu')
+
+    }
+
+  ),
 
 
   #### plot 3: mean trait values by plot ####
