@@ -57,14 +57,14 @@ FigurePlan <- list(
       pDCS <- make_trait_pca_figure(trait_pca_all[[3]], trait_pca_all[[1]],
                                     col = c("blue", "forestgreen", "orange"),
                                     tag = "A")
-     pD <- make_trait_pca_figure(trait_pca_DH[[3]], trait_pca_DH[[1]],
-                                 col = "orange",
+     pS <- make_trait_pca_figure(trait_pca_SB[[3]], trait_pca_SB[[1]],
+                                 col = "blue",
                                  tag = "B")
      pC <- make_trait_pca_figure(trait_pca_CH[[3]], trait_pca_CH[[1]],
                                  col = "forestgreen",
                                  tag = "C")
-     pS <- make_trait_pca_figure(trait_pca_SB[[3]], trait_pca_SB[[1]],
-                                 col = "blue",
+     pD <- make_trait_pca_figure(trait_pca_DH[[3]], trait_pca_DH[[1]],
+                                 col = "orange",
                                  tag = "D")
 
      PCA <- pDCS / (pS | pC | pD) + plot_layout(height = c(3, 1))
