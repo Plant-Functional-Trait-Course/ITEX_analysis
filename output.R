@@ -1,6 +1,7 @@
 ### Output
 library(targets)
 library(tarchetypes)
+library(usethis)
 library(tidyverse)
 library(lubridate)
 library(vegan)
@@ -18,11 +19,11 @@ ggsave("output/Fig_1_NMDS.png", Fig_1_CommunityOrdination, dpi = 300, height = 2
 
 # Fig 2 Trait mean
 tar_load(Fig_2_trait_mean)
-ggsave("output/Fig_2_trait_mean.png", Fig_2_trait_mean, dpi = 300, height = 6, width = 8)
+ggsave("output/Fig_2_trait_mean.png", Fig_2_trait_mean, dpi = 300, height = 7, width = 10)
 
 # Fig 3 Specific - fixed mean
 tar_load(Fig_3_specific_fixed)
-ggsave("output/Fig_3_specific_fixed.png", Fig_3_specific_fixed, dpi = 300, height = 6, width = 8)
+ggsave("output/Fig_3_specific_fixed.png", Fig_3_specific_fixed, dpi = 300, height = 7, width = 10)
 
 # Fig 4 C-fluxes
 tar_load(Fig_4_Fluxes)
@@ -49,7 +50,7 @@ ggsave("output/Fig_S4_CanopyHeight.png", Fig_S4_CanopyHeight, dpi = 300, height 
 
 # Fig S5 PCA
 tar_load(Fig_5_pca_plot)
-ggsave("output/Fig_S5_pca.png", Fig_5_pca_plot, dpi = 300, height = 7.3, width = 6)
+ggsave("output/Fig_S5_pca.png", Fig_5_pca_plot, dpi = 300, height = 12, width = 10)
 
 # Fig S7 Mean fluxes
 tar_load(Fig_S7_Mean_fluxes)
