@@ -27,8 +27,8 @@ ggsave("output/Fig_3_specific_fixed.png", Fig_3_specific_fixed, dpi = 300, heigh
 
 # Fig 4 C-fluxes
 tar_load(Fig_4_Fluxes)
-ggsave("output/Fig_4_Fluxes.png", Fig_4_Fluxes, dpi = 300, height = 6, width = 15)
-ggsave("output/Fig_4_Fluxes.png", Fig_4_Fluxes, height = 8, width = 15)
+ggsave("output/Fig_4_Fluxes.png", Fig_4_Fluxes, dpi = 300, height = 10, width = 10)
+
 
 ## Appendix
 
