@@ -25,12 +25,14 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
                       labels = c("intra", "inter"),
                       name = "Trait variation") +
     geom_hline(yintercept = 0, colour = "grey40") +
-    labs(y = '', tag = "C") +
+    labs(x = "", y = "Explained variance %", tag = "C") +
     scale_y_continuous(limits = c(-10, 70),
                        breaks = seq(-10, 70, by = 10)) +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
+          axis.text = element_text(size = 13),
+          axis.title = element_text(size = 14),
           legend.position = c(0.2, 0.8))
 
   p2 <- model_selection_output %>%
@@ -59,10 +61,10 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.text = element_text(size = 13),
-          axis.title = element_text(size = 14),
-          legend.title=element_text(size=13),
-          legend.text=element_text(size=12),
-          legend.position = c(0.65,0.85))
+          axis.title = element_text(size = 14))
+          #legend.title=element_text(size=13),
+          #legend.text=element_text(size=12))
+          #legend.position = c(0.65,0.85))
 
 
 
@@ -83,7 +85,8 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
                          labels = c("Environment", "Environment & Taxonomy", "Taxonomy", "All", "Taxonomy & Trait", "Environment & Trait", "Trait")) +
     #distinguish pattern angle
     scale_pattern_angle_manual(values = c(45, 45, 0, 45 , 0, 45, 0),
-                               labels = c("Environment", "Environment & Taxonomy", "Taxonomy", "All", "Taxonomy & Trait", "Environment & Trait", "Trait")) +
+                               labels = c("Environment", "Environment & Taxonomy", "Taxonomy", "All", "Taxonomy & Trait", "Environment & Trait", "Trait"),
+                               guide = guide_legend(override.aes = list(pattern_spacing = 0.005))) +
     geom_hline(yintercept = 0, colour = "grey40") +
     scale_y_continuous(limits = c(-10, 70), breaks = seq(-10, 70, by = 10)) +
     labs(x = "", y = "", tag = "B") +
@@ -91,10 +94,11 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.text = element_text(size = 13),
-          axis.title = element_text(size = 14),
-          legend.position = "none")
+          axis.title = element_text(size = 14))
 
-  carbon_flux_figure <- p2 + p3 + p1
+  p4 <- p2 + p3 + plot_layout(guides = 'collect') & theme(legend.position = 'bottom')
+
+  carbon_flux_figure <- p4 / (p1 + plot_spacer())
 
   return(carbon_flux_figure)
 

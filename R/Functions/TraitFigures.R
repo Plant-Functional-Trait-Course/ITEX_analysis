@@ -96,10 +96,10 @@ make_trait_pca_figure <- function(trait_pca_info, pca_res, col, tag){
                          colour = "Habitat",
                          size = 3,
                          loadings = TRUE,
-                         loadings.colour = 'grey70',
+                         loadings.colour = 'grey80',
                          loadings.label = TRUE,
                          loadings.label.size = 4,
-                         loadings.label.colour = "black",
+                         loadings.label.colour = "grey50",
                          loadings.label.repel = TRUE,
                          parse = TRUE) +
       scale_color_manual(values = c("blue", "forestgreen", "orange")) +
@@ -116,19 +116,19 @@ make_trait_pca_figure <- function(trait_pca_info, pca_res, col, tag){
     pca_plot <- autoplot(pca_res, data = pca_points,
                          shape = 'Treatment',
                          colour = col,
-                         size = 3,
+                         size = 2,
                          loadings = TRUE,
-                         loadings.colour = 'grey70',
+                         loadings.colour = 'grey80',
                          loadings.label = TRUE,
-                         loadings.label.size = 4,
-                         loadings.label.colour = "grey70",
+                         loadings.label.size = 2.5,
+                         loadings.label.colour = "grey50",
                          loadings.label.repel = TRUE,
                          parse = TRUE) +
       scale_shape_manual(values = c(1, 17)) +
       labs(tag = tag) +
       theme_classic() +
       theme(legend.position = "none",
-            text = element_text(size = 12))
+            text = element_text(size = 10))
 
   }
 

@@ -2,6 +2,8 @@
 
 #### TRAIT BOOTSTRAPPING ####
 
+#comm_raw <- Community
+#trait_raw <- Traits
 make_bootstrapping <- function(comm_raw, trait_raw){
 
   #prepare community data
@@ -62,6 +64,16 @@ make_bootstrapping <- function(comm_raw, trait_raw){
     autoplot(.) +
     theme(axis.text.x = element_text(angle = 90))
 
+  fortify(trait_imp) |>
+    ungroup() |>
+    #filter(Trait == "CN_ratio") |>
+    complete(.id, level, Trait, fill = list(s = 0)) |>
+    filter(level == "PlotID") |>
+    group_by(Trait) |>
+    summarise(q = quantile(s, prob = 0.25))
+
+  # For the size related traits (dry mass, ...), 90 % (prob = 0.1) of the plots have at least 90 % coverage at the plot level. For nutrient traits, 75 % (prob = 0.25) have at least 76.2 % coverage.
+
   trait_imp_null %>%
     autoplot(.) +
     theme(axis.text.x = element_text(angle = 90))
@@ -91,6 +103,7 @@ make_bootstrapping <- function(comm_raw, trait_raw){
   return(traitMean)
 
 }
+
 
 
 make_trait_pca <- function(Trait_Mean){
