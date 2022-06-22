@@ -54,7 +54,7 @@ make_itv_figure <- function(traitMean){
     group_by(Trait, Site, Treatment) %>%
     summarise(P = t.test(itv_diff, mu = 0)$p.value,
               Sig = ifelse(P < 0.05, "*", ifelse(P<0.1 & P > 0.05, "+", "")),
-              MaxWidth = max(itv_diff))%>%
+              MaxWidth = max(itv_diff)) %>%
     ungroup() %>%
     mutate(Trait = plyr::mapvalues(Trait, from = c("SLA_cm2_g", "LDMC", "Leaf_Area_cm2", "Leaf_Thickness_mm", "N_percent", "C_percent", "P_Ave", "CN_ratio", "dC13_percent", "dN15_percent", "Dry_Mass_g", "Plant_Height_cm"), to = c("`SLA`*` `*(cm^2/g)", "`LDMC`*` `*(g/g)", "'Leaf'*' '*'Area'*' '*(cm^2)", "'Leaf'*' '*'Thickness'*' '*(mm)", "'N'*' '*'(%)'", "'C'*' '*'(%)'", "'P'*' '*'(%)'", "'C'*':'*'N'", "paste(delta^13, 'C'*' '*'(\u2030)')", "paste(delta^15, 'N'*' '*'(\u2030)')", "'Dry'*' '*'Mass'*' '*'(g)'", "'Plant'*' '*'Height'*' '*'(cm)'"))) %>%
     mutate(Trait = factor(Trait, levels = c("'Plant'*' '*'Height'*' '*'(cm)'",  "'Dry'*' '*'Mass'*' '*'(g)'","'Leaf'*' '*'Area'*' '*(cm^2)", "`SLA`*` `*(cm^2/g)", "'Leaf'*' '*'Thickness'*' '*(mm)", "`LDMC`*` `*(g/g)",  "'N'*' '*'(%)'", "'C'*' '*'(%)'", "'P'*' '*'(%)'", "'C'*':'*'N'", "paste(delta^13, 'C'*' '*'(\u2030)')", "paste(delta^15, 'N'*' '*'(\u2030)')" )))
@@ -98,8 +98,8 @@ make_trait_pca_figure <- function(trait_pca_info, pca_res, col, tag){
                          loadings = TRUE,
                          loadings.colour = 'grey80',
                          loadings.label = TRUE,
-                         loadings.label.size = 4,
-                         loadings.label.colour = "grey50",
+                         loadings.label.size = 5,
+                         loadings.label.colour = "grey20",
                          loadings.label.repel = TRUE,
                          parse = TRUE) +
       scale_color_manual(values = c("blue", "forestgreen", "orange")) +
@@ -121,7 +121,7 @@ make_trait_pca_figure <- function(trait_pca_info, pca_res, col, tag){
                          loadings.colour = 'grey80',
                          loadings.label = TRUE,
                          loadings.label.size = 2.5,
-                         loadings.label.colour = "grey50",
+                         loadings.label.colour = "grey20",
                          loadings.label.repel = TRUE,
                          parse = TRUE) +
       scale_shape_manual(values = c(1, 17)) +
