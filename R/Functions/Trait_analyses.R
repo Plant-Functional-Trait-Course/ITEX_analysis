@@ -197,3 +197,38 @@ Intra_vs_Inter_var_split <- function(var_split_exp){
 
 
 
+
+importance_intra_vs_inter <- function(Trait_Mean){
+
+  itv_importance <- Trait_Mean %>%
+  mutate(itv_diff = mean-mean_noitv,
+         Treatment = recode(Treatment, CTL = "Control", OTC = "Warming")) |>
+  group_by(Trait, Site) |>
+  nest() |>
+  mutate(fit = map(data, ~ lm(itv_diff ~ Treatment, data = .x)),
+         tidy = map(fit, tidy)) |>
+  unnest(tidy) |>
+    mutate(Trait = recode(Trait,
+                          "SLA_cm2_g" = "SLA",
+                          "Leaf_Area_cm2" = "Leaf Area",
+                          "Leaf_Thickness_mm" = "Leaf Thickness",
+                          "N_percent" = "Leaf N",
+                          "C_percent" = "Leaf C",
+                          "P_Ave" = "Leaf P",
+                          "CN_ratio" = "C:N",
+                          "dC13_percent" = "d13C",
+                          "dN15_percent" = "d15N",
+                          "Dry_Mass_g" = "Dry Mass",
+                          "Plant_Height_cm" = "Plant Height"),
+           Trait = factor(Trait, levels = c("Plant Height", "Dry Mass", "Leaf Area", "Leaf Thickness", "SLA", "LDMC", "Leaf C", "Leaf N", "Leaf P", "C:N", "d13C", "d15N")),
+           Site = recode(Site, SB = "Snowbed", CH = "Cassiope heath", DH = "Dryas heath"),
+           Site = factor(Site, levels = c("Snowbed", "Cassiope heath", "Dryas heath"))) |>
+    arrange(Trait, Site)
+
+
+  return(itv_importance)
+
+}
+
+
+
