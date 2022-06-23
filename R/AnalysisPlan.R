@@ -273,6 +273,19 @@ AnalysisPlan <- list(
   tar_target(
     name = Temperature_Analyses_results,
     command = temperature_analysis(Monthly_Temp)
+  ),
+
+  # Annual climate control vs otc
+  tar_target(
+    name = annual_climate,
+    command = Monthly_Temp %>%
+      mutate(year = year(YearMonth)) %>%
+      group_by(LoggerLocation, Treatment) %>%
+      summarise(mean = mean(Value),
+                se = sd(Value)/sqrt(n()),
+                min = min(Value),
+                max = max(Value))
   )
+
 
 )
