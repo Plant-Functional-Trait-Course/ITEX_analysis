@@ -62,11 +62,15 @@ community_metric_change <- function(comm, meta, comm_resp){
   return(metric_plot_dist)
 }
 
-
+#metric_plot_dist <- Comm_Metric_Change
 community_t_test <- function(metric_plot_dist){
-  t_test <- metric_plot_dist %>% filter(response != "Diversity") %>%
-    mutate(response = plyr::mapvalues(response, from = c("propBryo", "propLichen", "sumAbundance", "totalForb", "totalGraminoid", "totaleShrub", "totaldShrub"), to = c("Bryophyte Abundance", "Lichen Abundance", "Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance"))) %>%
-    mutate(response = factor(response, levels = c("Bray Curtis Distance", "Evenness", "Richness","Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance", "Bryophyte Abundance", "Lichen Abundance"))) %>%
+  t_test <- metric_plot_dist %>%
+    filter(response != "Diversity") %>%
+    mutate(response = plyr::mapvalues(response,
+                                      from = c("propBryo", "propLichen", "sumAbundance", "totalForb", "totalGraminoid", "totaleShrub", "totaldShrub"),
+                                      to = c("Bryophyte Abundance", "Lichen Abundance", "Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance"))) %>%
+    mutate(response = factor(response,
+                             levels = c("Bray Curtis Distance", "Evenness", "Richness","Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance", "Bryophyte Abundance", "Lichen Abundance"))) %>%
     #dplyr::filter(response != "Forb Abundance") %>%
     #filter(response != "Bryophyte Abundance") %>%
     #filter(response != "Lichen Abundance") %>%
@@ -74,8 +78,12 @@ community_t_test <- function(metric_plot_dist){
     group_by(response, Site, Treatment) %>%
     summarise(P = t.test(dist, mu = 0)$p.value,
               Sig = ifelse(P < 0.05, "*", ifelse(P<0.1 & P > 0.05, "+", "")),
-              MaxWidth = max(dist))%>% ungroup() %>%
-    mutate(response = factor(response, levels = c("Bray Curtis Distance", "Evenness", "Richness","Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance", "Bryophyte Abundance", "Lichen Abundance")))
+              MaxWidth = max(dist)) %>%
+    ungroup() %>%
+    mutate(response = factor(response, levels = c("Bray Curtis Distance", "Evenness", "Richness","Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance", "Bryophyte Abundance", "Lichen Abundance")),
+           Site = recode(Site, CH = "Cassiope heath", DH = "Dryas heath", SB = "Snowbed"),
+           Site = factor(Site, levels = c("Snowbed", "Cassiope heath", "Dryas heath")),
+           Treatment = recode(Treatment, CTL = "Control", OTC = "Warming"))
 
   return(t_test)
 

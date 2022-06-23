@@ -48,9 +48,37 @@ ggsave("output/Fig_S3_comm_metrics.png", Fig_S3_metric_change, dpi = 300, height
 tar_load(Fig_S4_CanopyHeight)
 ggsave("output/Fig_S4_CanopyHeight.png", Fig_S4_CanopyHeight, dpi = 300, height = 4, width = 5)
 
+# Table SXX
+tar_load(Anova_Trait_Tidy)
+Anova_Trait_Tidy |> print(n = Inf)
+  mutate(Trait = recode(Trait,
+                        "SLA_cm2_g" = "SLA",
+                        "Leaf_Area_cm2" = "Leaf Area",
+                        "Leaf_Thickness_mm" = "Leaf Thickness",
+                        "N_percent" = "Leaf N",
+                        "C_percent" = "Leaf C",
+                        "P_Ave" = "Leaf P",
+                        "CN_ratio" = "C:N",
+                        "dC13_percent" = "d13C",
+                        "dN15_percent" = "d15N",
+                        "Dry_Mass_g" = "Dry Mass",
+                        "Plant_Height_cm" = "Plant Height"),
+         Trait = factor(Trait, levels = c("Plant Height", "Dry Mass", "Leaf Area", "Leaf Thickness", "SLA", "LDMC", "Leaf C", "Leaf N", "Leaf P", "C:N", "d13C", "d15N")),
+         sumsq = round(sumsq, 2),
+         meansq = round(meansq, 2),
+         statistic = round(statistic, 2),
+         p.value = round(p.value, 3)) |>
+  arrange(Trait) %>%
+  writexl::write_xlsx(., "output/Anova_Trait_Tidy.xlsx")
+
+
 # Fig S5 PCA
 tar_load(Fig_5_pca_plot)
 ggsave("output/Fig_S5_pca.png", Fig_5_pca_plot, dpi = 300, height = 12, width = 10)
+
+# Table SX
+tar_load(itv_importance)
+writexl::write_xlsx(itv_importance, "output/itv_importance.xlsx")
 
 # Fig S7 Mean fluxes
 tar_load(Fig_S7_Mean_fluxes)

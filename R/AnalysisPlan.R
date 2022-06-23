@@ -33,10 +33,10 @@ AnalysisPlan <- list(
     command = community_t_test(Comm_Metric_Change)
   ),
 
-  tar_target(
-    name = Comm_t_Test_Supp,
-    command = community_t_test(Comm_Metric_Change)
-  ),
+  # tar_target(
+  #   name = Comm_t_Test_Supp,
+  #   command = community_t_test(Comm_Metric_Change)
+  # ),
 
   # Community ANOVA and tidy results
   tar_target(
@@ -183,6 +183,7 @@ AnalysisPlan <- list(
     command = Anova_Trait %>%
       select(Trait, aov_tidy) %>%
       unnest(aov_tidy)
+
   ),
 
 
@@ -196,6 +197,18 @@ AnalysisPlan <- list(
   tar_target(
     name = Var_Split,
     command = Intra_vs_Inter_var_split(Var_Split_Exp)
+  ),
+
+  # importance of ITV in warm vs control
+  tar_target(
+    name = itv_importance,
+    command = importance_intra_vs_inter(Trait_Mean) |>
+      select(Trait, "Habitat type" = Site, term:p.value) |>
+      mutate(term = recode(term, "(Intercept)" = "Intercept", "TreatmentWarming" = "Warming"),
+             estimate = round(estimate, 2),
+             std.error = round(std.error, 2),
+             statistic = round(statistic, 2),
+             p.value = round(p.value, 3))
   ),
 
 
@@ -260,6 +273,19 @@ AnalysisPlan <- list(
   tar_target(
     name = Temperature_Analyses_results,
     command = temperature_analysis(Monthly_Temp)
+  ),
+
+  # Annual climate control vs otc
+  tar_target(
+    name = annual_climate,
+    command = Monthly_Temp %>%
+      mutate(year = year(YearMonth)) %>%
+      group_by(LoggerLocation, Treatment) %>%
+      summarise(mean = mean(Value),
+                se = sd(Value)/sqrt(n()),
+                min = min(Value),
+                max = max(Value))
   )
+
 
 )
