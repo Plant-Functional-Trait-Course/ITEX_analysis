@@ -277,14 +277,25 @@ AnalysisPlan <- list(
 
   # Annual climate control vs otc
   tar_target(
-    name = annual_climate,
+    name = annual_temp,
     command = Monthly_Temp %>%
       mutate(year = year(YearMonth)) %>%
       group_by(LoggerLocation, Treatment) %>%
-      summarise(mean = mean(Value),
-                se = sd(Value)/sqrt(n()),
-                min = min(Value),
-                max = max(Value))
+      summarise(mean = mean(Value)) |>
+      pivot_wider(names_from = Treatment, values_from = mean) %>%
+      mutate(diff = OTC - CTL)
+  ),
+
+  # Annual climate control vs otc test
+  tar_target(
+    name = annual_temp_analysis,
+    command = Monthly_Temp %>%
+      mutate(Year = year(YearMonth)) %>%
+      group_by(LoggerLocation) %>%
+      nest() %>%
+      mutate(mod1 = map(data, ~ lm(Value ~ Treatment, data = .x)),
+             res = map(mod1, tidy)) |>
+      unnest(res)
   )
 
 
