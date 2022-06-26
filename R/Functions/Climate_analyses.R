@@ -98,16 +98,16 @@ make_climate_figure <- function(monthlyTemp, dailyClimate){
 # Test monthly temperature in OTC vs CTL in the summer and winter
 
 # 3 summer and 3 winter month, analyse per month
-temperature_analysis <- function(monthlyTemp){
+temperature_analysis <- function(Monthly_Temp){
 
-  temperature_models <- monthlyTemp %>%
+  temperature_models <- Monthly_Temp %>%
     mutate(Year = year(YearMonth),
            Month = lubridate::month(YearMonth)) %>%
     #filter(Month %in% c(6, 7, 8)) %>%
-    filter(month(YearMonth) %in% c(1, 2, 3, 7, 8, 9)) %>%
+    filter(month(YearMonth) %in% c(1, 2, 3, 7)) %>%
     mutate(season = case_when(month(YearMonth) %in% c(1, 2, 3) ~ "winter",
                             TRUE ~ "summer")) %>%
-    group_by(Site, LoggerLocation, season, Month) %>%
+    group_by(LoggerLocation, season) %>%
     nest() %>%
     mutate(mod1 = map(data, ~ lm(Value ~ Treatment, data = .x)),
            result1 = map(mod1, glance),
@@ -120,7 +120,7 @@ temperature_analysis <- function(monthlyTemp){
             Null_model = temperature_models %>%
               unnest(result2),
             .id = "Model") %>%
-    select(Model, Site, LoggerLocation, season, Month, AIC) %>%
+    select(Model, LoggerLocation, season, AIC) %>%
     pivot_wider(names_from = "Model", values_from = "AIC") %>%
     mutate(Model_Diff = Treatment_model - Null_model)
   # Only for surface DRY is model including Treatment better.
@@ -128,8 +128,15 @@ temperature_analysis <- function(monthlyTemp){
   return(temperature_model_results)
 }
 
-
-
-
-
+# get F, DF and P for global test
+# july temp
+# dd <- Monthly_Temp |>
+#   filter(month(YearMonth) %in% c(7)) %>%
+#   filter(LoggerLocation == "surface")
+# summary(lm(Value ~ Treatment, data = dd))
+#
+# # annual
+# dd <- Monthly_Temp |>
+#   filter(LoggerLocation == "surface")
+# summary(lm(Value ~ Treatment, data = dd))
 
