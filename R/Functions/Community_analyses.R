@@ -30,7 +30,7 @@ calc_comm_metrics <- function(comm){
 }
 
 
-#### plot 1: change in community metrics ####
+#### Change in community metrics (Figure S4) ####
 community_metric_change <- function(comm, meta, comm_resp){
 
   #multivariate community distances
@@ -49,8 +49,6 @@ community_metric_change <- function(comm, meta, comm_resp){
     gather(key = response, value = value, -Year, -Site, -Treatment, -PlotID) %>%
     group_by(Treatment, PlotID, Site, response) %>%
     summarize(dist = diff(value))%>%
-    #left_join(soil_moisture2003, by = "PlotID") %>%
-    #left_join(soil_moisture2004, by = "PlotID") %>%
     filter(response == "Richness" | response == "Diversity" | response == "Evenness" | response == "sumAbundance" | response == "totalGraminoid" | response == "totalForb" | response == "totaldShrub" | response == "totaleShrub" | response == "propLichen" | response == "propBryo")
 
   comm_distances_merge <- comm_distances %>%
@@ -91,104 +89,47 @@ community_t_test <- function(metric_plot_dist){
 
 
 
-#### Figure S4 change in other community metrics ####
-t_test_supp <- function(metric_plot_dist){
-
-  t_test_supp <- metric_plot_dist %>%
-    filter(response != "Diversity") %>%
-    mutate(response = plyr::mapvalues(response, from = c("propBryo", "propLichen", "sumAbundance", "totalForb", "totalGraminoid", "totaleShrub", "totaldShrub"), to = c("Bryophyte Abundance", "Lichen Abundance", "Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance"))) %>%
-    mutate(response = factor(response, levels = c("Bray Curtis Distance", "Evenness", "Richness","Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance", "Bryophyte Abundance", "Lichen Abundance"))) %>%
-    filter(response != "Bray Curtis Distance", response != "Evenness", response != "Richness", response != "Vascular Abundance", response != "Graminoid Abundance", response != "Evergreen Shrub Abundance", response != "Deciduous Shrub Abundance") %>%
-    droplevels(.) %>%
-    group_by(response, Site, Treatment) %>%
-    summarise(P = t.test(dist, mu = 0)$p.value,
-              Sig = ifelse(P < 0.05, "*", ifelse(P<0.1 & P > 0.05, "+", "")),
-              MaxWidth = max(dist))%>% ungroup() %>%
-    mutate(response = factor(response, levels = c("Bray Curtis Distance", "Evenness", "Richness","Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance", "Bryophyte Abundance", "Lichen Abundance")))
-
-  return(t_test_supp)
-}
-
-
+#### Change in other community metrics ####
+# t_test_supp <- function(metric_plot_dist){
+#
+#   t_test_supp <- metric_plot_dist %>%
+#     filter(response != "Diversity") %>%
+#     mutate(response = plyr::mapvalues(response, from = c("propBryo", "propLichen", "sumAbundance", "totalForb", "totalGraminoid", "totaleShrub", "totaldShrub"), to = c("Bryophyte Abundance", "Lichen Abundance", "Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance"))) %>%
+#     mutate(response = factor(response, levels = c("Bray Curtis Distance", "Evenness", "Richness","Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance", "Bryophyte Abundance", "Lichen Abundance"))) %>%
+#     filter(response != "Bray Curtis Distance", response != "Evenness", response != "Richness", response != "Vascular Abundance", response != "Graminoid Abundance", response != "Evergreen Shrub Abundance", response != "Deciduous Shrub Abundance") %>%
+#     droplevels(.) %>%
+#     group_by(response, Site, Treatment) %>%
+#     summarise(P = t.test(dist, mu = 0)$p.value,
+#               Sig = ifelse(P < 0.05, "*", ifelse(P<0.1 & P > 0.05, "+", "")),
+#               MaxWidth = max(dist))%>% ungroup() %>%
+#     mutate(response = factor(response, levels = c("Bray Curtis Distance", "Evenness", "Richness","Vascular Abundance", "Forb Abundance", "Graminoid Abundance", "Evergreen Shrub Abundance", "Deciduous Shrub Abundance", "Bryophyte Abundance", "Lichen Abundance")))
+#
+#   return(t_test_supp)
+# }
 
 
 
-#### NMDS ORDINATION ####
-nmds_ordination <- function(comm){
-  set.seed(32)
-
-  comm <- comm %>%
-    mutate(Treatment = recode(Treatment, CTL = "Control", OTC = "Warming"))
 
 
-  # SNOWBED (SB)
-  comm_fat_SB <- comm %>%
-    select(-c(FunctionalGroup:Flag)) %>%
-    arrange(Year) %>%
-    spread(key = Taxon, value = Abundance, fill = 0) %>%
-    filter(Site == "SB")
-
-  comm_fat_spp_SB <- comm_fat_SB %>% select(-(Year:PlotID))
-
-  NMDS_SB <- metaMDS(comm_fat_spp_SB, noshare = TRUE, try = 30)
-
-  fNMDS_SB <- fortify(NMDS_SB) %>%
-    filter(Score == "sites") %>%
-    bind_cols(comm_fat_SB %>% select(Year:PlotID))
 
 
-  # CASSIOPE HEATH (CH)
-  comm_fat_CH <- comm %>%
-    select(-c(FunctionalGroup:Flag)) %>%
-    arrange(Year) %>%
-    spread(key = Taxon, value = Abundance, fill = 0) %>%
-    filter(Site == "CH")
 
-  comm_fat_spp_CH <- comm_fat_CH %>% select(-(Year:PlotID))
+### MAKE SP PCA
+make_sp_pca <- function(comm_sp, comm_info){
 
-  NMDS_CH <- metaMDS(comm_fat_spp_CH, noshare = TRUE, try = 100)
+  # make pca
+  res <- rda(comm_sp)
 
-  fNMDS_CH <- fortify(NMDS_CH) %>%
-    filter(Score == "sites") %>%
-    bind_cols(comm_fat_CH %>% select(Year:PlotID))
+  out <- bind_cols(comm_info, fortify(res) |>
+                     filter(Score == "sites"))
 
+  sp <- fortify(res) |>
+    filter(Score == "species")
 
-  # DRYAS HEATH
-  comm_fat_DH <- comm %>%
-    select(-c(FunctionalGroup:Flag)) %>%
-    arrange(Year) %>%
-    spread(key = Taxon, value = Abundance, fill = 0) %>%
-    filter(Site == "DH")
-
-  comm_fat_spp_DH <- comm_fat_DH %>% select(-(Year:PlotID))
-
-  NMDS_DH <- metaMDS(comm_fat_spp_DH, noshare = TRUE, try = 100)
-
-  fNMDS <- fortify(NMDS_DH) %>%
-    filter(Score == "sites") %>%
-    bind_cols(comm_fat_DH %>% select(Year:PlotID)) %>%
-    bind_rows(fNMDS_SB, fNMDS_CH)
-
-  return(fNMDS)
+  return(list(out, sp, res))
 
 }
 
-
-# Check if community composition changes in treatments and over time
-NMDS_analysis <- function(NMDS_output){
-
-  NMDS_result <- NMDS_output %>%
-    nest(data = -Site) %>%
-    mutate(
-      fit = map(data, ~ lm(NMDS1 ~ Treatment * Year, data = .x)),
-      tidied = map(fit, tidy)
-    ) %>%
-    unnest(tidied) %>%
-    filter(p.value < 0.05,
-           term != "(Intercept)")
-
-  return(NMDS_result)
-}
 
 
 height_analysis <- function(height){
