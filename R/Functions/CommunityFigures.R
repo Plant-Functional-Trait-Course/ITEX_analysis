@@ -86,9 +86,9 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
 
 }
 
-anova_t <- Comm_Anova_tidy
-metric_plot_dist <- Comm_Metric_Change
-t_test <- Comm_t_Test
+# anova_t <- Comm_Anova_tidy
+# metric_plot_dist <- Comm_Metric_Change
+# t_test <- Comm_t_Test
 ### Fig S3 change in community metrics
 community_metrics_figure <- function(anova_t, metric_plot_dist, t_test){
 
@@ -147,7 +147,7 @@ make_height_figure <- function(height){
     labs(y = "Canopy height cm", x = "Habitat Type") +
     annotate("text", x = 2, y = 30, label = "T *") +
     annotate("text", x = 3, y = 30, label = "T *") +
-    theme_classic() +
+    theme_bw() +
     theme(text = element_text(size = 20))
 
   return(canopy_height_figure)
