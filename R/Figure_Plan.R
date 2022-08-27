@@ -2,12 +2,12 @@
 
 FigurePlan <- list(
 
-  ### Community Figures
+  ### COMMUNITY FIGURE
 
-  # Fig 1 NMDS ordination
+  # Fig 1 PCA species ordination
   tar_target(
-    name = Fig_1_CommunityOrdination,
-    command = make_ordination(NMDS_output)
+    name = Fig_1_Community_PCA,
+    command = make_sp_pca_figure(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh)
   ),
 
   # Fig S3 metric change
@@ -22,25 +22,16 @@ FigurePlan <- list(
     command = make_height_figure(Height)
   ),
 
-  # Fig S4 metric change supplement
-  # tar_target(
-  #   name = Fig_S4_metric_change_supp,
-  #   command = community_metrics_figure_supp(Comm_Anova_tidy, Comm_Metric_Change, Comm_t_Test_Supp)
-  # ),
 
-  # Fig S5 metric change over time
-  # tar_target(
-  #   name = Fig_S5_metric_time,
-  #   command = metric_time_figure(CommResp)
-  # ),
+  ### TRAIT FIGURES
 
-  ### Trait Figures
-
-  # Fig 2 Trait mean
+  # Fig 2 Trait PCA
   tar_target(
-    name = Fig_2_trait_mean,
-    command = make_trait_mean_figure(Anova_Trait_Tidy, Trait_Mean)
+    name = Fig_2_Trait_PCA,
+    command =  make_trait_pca_figure(trait_pca_all, trait_pca_SB, trait_pca_CH, trait_pca_DH)
+
   ),
+
 
   # Fig 3 Specific vs fixed mean ITV
   tar_target(
@@ -48,32 +39,10 @@ FigurePlan <- list(
     command = make_itv_figure(Trait_Mean)
   ),
 
-
-  # Fig S5 Trait PCA
+  # Fig S5 Trait mean
   tar_target(
-    name = Fig_5_pca_plot,
-    command = {
-
-      pDCS <- make_trait_pca_figure(trait_pca_all[[3]], trait_pca_all[[1]],
-                                    col = c("blue", "forestgreen", "orange"),
-                                    tag = "A")
-     pS <- make_trait_pca_figure(trait_pca_SB[[3]], trait_pca_SB[[1]],
-                                 col = "blue",
-                                 tag = "B")
-     pC <- make_trait_pca_figure(trait_pca_CH[[3]], trait_pca_CH[[1]],
-                                 col = "forestgreen",
-                                 tag = "C")
-     pD <- make_trait_pca_figure(trait_pca_DH[[3]], trait_pca_DH[[1]],
-                                 col = "orange",
-                                 tag = "D")
-
-     PCA <- pDCS / (pS | pC | pD) + plot_layout(height = c(3, 1))
-
-     return(PCA)
-
-    }
-
-
+    name = Fig_S5_trait_mean,
+    command = make_trait_mean_figure(Anova_Trait_Tidy, Trait_Mean)
   ),
 
   # Fig S6 Intra vs. turnover

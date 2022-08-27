@@ -3,19 +3,8 @@
 AnalysisPlan <- list(
 
 
-  # NMDS ordination and results
-  tar_target(
-    name = NMDS_output,
-    command = nmds_ordination(Community)
-  ),
-
-  tar_target(
-    name = NMDS_result,
-    command = NMDS_analysis(NMDS_output)
-  ),
-
-
-  # diversity indices
+  ### COMMUNITY ANALYSIS
+  # Diversity indices
   tar_target(
     name = CommResp,
     command = calc_comm_metrics(Community)
@@ -33,10 +22,6 @@ AnalysisPlan <- list(
     command = community_t_test(Comm_Metric_Change)
   ),
 
-  # tar_target(
-  #   name = Comm_t_Test_Supp,
-  #   command = community_t_test(Comm_Metric_Change)
-  # ),
 
   # Community ANOVA and tidy results
   tar_target(
@@ -58,12 +43,110 @@ AnalysisPlan <- list(
   ),
 
 
+  # Species PCA
+  # wide community data with rare species removed
+  tar_target(
+    name = comm_wide,
+    command = Community %>%
+      select(-c(FunctionalGroup, Elevation_m:Flag)) |>
+      mutate(Abundance = sqrt(Abundance)) |>
+      pivot_wider(names_from = Taxon, values_from = Abundance, values_fill = 0) |>
+      mutate(Site = factor(Site, levels = c("SB", "CH", "DH")))
+  ),
+
+  # PCA for all habitats
+  tar_target(
+    name = pca_sp,
+    command = {
+      # select traits
+      comm_sp <- comm_wide %>%
+        select("bistorta vivipara":"bryum sp")
+
+      # meta data
+      comm_info <- comm_wide %>%
+        select(Year:PlotID)
+
+      make_sp_pca(comm_sp = comm_wide %>%
+                    select("bistorta vivipara":"bryum sp"),
+                  comm_info = comm_wide %>%
+                    select(Year:PlotID))
+    }
+  ),
+
+  # adonis all species: habitat x treatment
+  tar_target(
+    name = adonis_sp_all,
+    command = adonis(pca_sp[[1]] |>
+                       select(PC1:PC6) ~ pca_sp[[1]]$Treatment * pca_sp[[1]]$Site * pca_sp[[1]]$Year, method='eu')
+  ),
+
+
+  # PCA separate per habitat
+  ## snowbed
+  tar_target(
+    name = pca_sp_sb,
+    command = make_sp_pca(comm_sp = comm_wide %>%
+                            filter(Site == "SB") |>
+                            select("bistorta vivipara":"bryum sp"),
+                          comm_info = comm_wide %>%
+                            filter(Site == "SB") |>
+                            select(Year:PlotID))
+  ),
+
+
+
+  ## cassiope
+  tar_target(
+    name = pca_sp_ch,
+    command = make_sp_pca(comm_sp = comm_wide %>%
+                            filter(Site == "CH") |>
+                            select("bistorta vivipara":"bryum sp"),
+                          comm_info = comm_wide %>%
+                            filter(Site == "CH") |>
+                            select(Year:PlotID))
+  ),
+
+  ## dryas
+  tar_target(
+    name = pca_sp_dh,
+    command = make_sp_pca(comm_sp = comm_wide %>%
+                            filter(Site == "DH") |>
+                            select("bistorta vivipara":"bryum sp"),
+                          comm_info = comm_wide %>%
+                            filter(Site == "DH") |>
+                            select(Year:PlotID))
+  ),
+
+
+  # adonis per habitat: treatment x year
+  tar_target(
+    name = pca_sb,
+    command = adonis(pca_sp_sb[[1]] |>
+                                select(PC1:PC6) ~ pca_sp_sb[[1]]$Treatment * pca_sp_sb[[1]]$Year, method='eu')
+  ),
+
+  tar_target(
+    name = pca_ch,
+    command = adonis(pca_sp_ch[[1]] |>
+                       select(PC1:PC6) ~ pca_sp_ch[[1]]$Treatment * pca_sp_ch[[1]]$Year, method='eu')
+  ),
+
+  tar_target(
+    name = pca_dh,
+    command = adonis(pca_sp_dh[[1]] |>
+                       select(PC1:PC6) ~ pca_sp_dh[[1]]$Treatment * pca_sp_dh[[1]]$Year, method='eu')
+  ),
+
+
+
   # Canopy height
   tar_target(
     name = Height_result,
     command = height_analysis(Height)
   ),
 
+
+  ### TRAIT ANALYSIS
 
   # Bootstrapping
   tar_target(
@@ -74,7 +157,7 @@ AnalysisPlan <- list(
   # Trait PCA
   tar_target(
     name = trait_pca_all,
-    command = make_trait_pca(Trait_Mean)
+    command = make_trait_pca(Trait_Mean, habitat = "all")
 
   ),
 
@@ -84,12 +167,12 @@ AnalysisPlan <- list(
     name = perm,
     command = {
 
-      pca_test <- cbind(trait_pca_all[[3]], trait_pca_all[[2]]) %>%
+      pca_test <- trait_pca_all[[1]] %>%
         rename("Habitat" = "Site") %>%
         group_by(Habitat, Treatment) %>%
-        select(-Site_trt, -Year, -Treatment, -PlotID)
+        select(-Site_trt, -Year, -PlotID)
 
-      adonis(pca_test[c(3:14)] ~ pca_test$Treatment * pca_test$Habitat, method='eu')
+      adonis(pca_test[c(5:10)] ~ pca_test$Treatment * pca_test$Habitat, method='eu')
 
     }
   ),
@@ -99,7 +182,7 @@ AnalysisPlan <- list(
   tar_target(
     name = trait_pca_DH,
     command = make_trait_pca(Trait_Mean |>
-                               filter(Site == "DH"))
+                               filter(Site == "DH"), habitat = "DH")
 
   ),
 
@@ -107,22 +190,22 @@ AnalysisPlan <- list(
     name = trait_pca_DH_test,
     command = {
 
-      pca_test <- cbind(trait_pca_DH[[3]], trait_pca_DH[[2]]) %>%
+      pca_test <- trait_pca_DH[[1]] %>%
         group_by(Treatment) %>%
-        select(-Site_trt, -Year, -Site, -Treatment, -PlotID)
+        select(-Site_trt, -Year, -Site, -PlotID)
 
-      adonis(pca_test[c(2:11)] ~ pca_test$Treatment, method='eu')
+      adonis(pca_test[c(4:9)] ~ pca_test$Treatment, method='eu')
 
     }
 
   ),
 
 
-  # Cassiope
+  #Cassiope
   tar_target(
     name = trait_pca_CH,
     command = make_trait_pca(Trait_Mean |>
-                               filter(Site == "CH"))
+                               filter(Site == "CH"), habitat = "CH")
 
   ),
 
@@ -130,21 +213,21 @@ AnalysisPlan <- list(
     name = trait_pca_CH_test,
     command = {
 
-      pca_test <- cbind(trait_pca_CH[[3]], trait_pca_CH[[2]]) %>%
+      pca_test <- trait_pca_CH[[1]] %>%
         group_by(Treatment) %>%
-        select(-Site_trt, -Year, -Site, -Treatment, -PlotID)
+        select(-Site_trt, -Year, -Site, -PlotID)
 
-      adonis(pca_test[c(2:7)] ~ pca_test$Treatment, method='eu')
+      adonis(pca_test[c(4:8)] ~ pca_test$Treatment, method='eu')
 
     }
 
   ),
 
-  # Snowbed
+  #Snowbed
   tar_target(
     name = trait_pca_SB,
     command = make_trait_pca(Trait_Mean |>
-                               filter(Site == "SB"))
+                               filter(Site == "SB"), habitat = "SB")
 
   ),
 
@@ -153,11 +236,11 @@ AnalysisPlan <- list(
     name = trait_pca_SB_test,
     command = {
 
-      pca_test <- cbind(trait_pca_SB[[3]], trait_pca_SB[[2]]) %>%
+      pca_test <- trait_pca_SB[[1]] %>%
         group_by(Treatment) %>%
-        select(-Site_trt, -Year, -Site, -Treatment, -PlotID)
+        select(-Site_trt, -Year, -Site, -PlotID)
 
-      adonis(pca_test[c(2:11)] ~ pca_test$Treatment, method='eu')
+      adonis(pca_test[c(4:9)] ~ pca_test$Treatment, method='eu')
 
     }
 
@@ -275,15 +358,19 @@ AnalysisPlan <- list(
     command = temperature_analysis(Monthly_Temp)
   ),
 
-  # Annual climate control vs otc
+  # Annual climate control vs otc (range)
+  # only use 2005 and 2015 data because other year are lacking data
   tar_target(
     name = annual_temp,
     command = Monthly_Temp %>%
       mutate(year = year(YearMonth)) %>%
-      group_by(LoggerLocation, Treatment) %>%
-      summarise(mean = mean(Value)) |>
-      pivot_wider(names_from = Treatment, values_from = mean) %>%
-      mutate(diff = OTC - CTL)
+      filter(year %in% c(2005, 2015)) |>
+      group_by(year, LoggerLocation, Treatment) %>%
+      summarise(mean = mean(Value),
+                se = sd(Value)/sqrt(n())) |>
+      filter(LoggerLocation == "surface", Treatment == "CTL")
+      #pivot_wider(names_from = Treatment, values_from = mean) %>%
+      #mutate(diff = OTC - CTL)
   ),
 
   # Annual climate control vs otc test

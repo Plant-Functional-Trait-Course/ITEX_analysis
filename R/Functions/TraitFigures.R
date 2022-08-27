@@ -1,13 +1,15 @@
 #### TRAIT FIGURES ####
 
-
-## Figure 2 trait mean ##
+# anova_trait_tidy <- Anova_Trait
+# traitMean <- Trait_Mean
+## Figure S5 trait mean ##
 make_trait_mean_figure <- function(anova_trait_tidy, traitMean){
 
   anova_text_trait <- anova_trait_tidy %>%
     ungroup() %>%
     mutate(Trait = plyr::mapvalues(Trait, from = c("SLA_cm2_g", "LDMC", "Leaf_Area_cm2", "Leaf_Thickness_mm", "N_percent", "C_percent", "P_Ave", "CN_ratio", "dC13_percent", "dN15_percent", "Dry_Mass_g", "Plant_Height_cm"), to = c("`SLA`*` `*(cm^2/g)", "`LDMC`*` `*(g/g)", "'Leaf'*' '*'Area'*' '*(cm^2)", "'Leaf'*' '*'Thickness'*' '*(mm)", "'N'*' '*'(%)'", "'C'*' '*'(%)'", "'P'*' '*'(%)'", "'C'*':'*'N'", "paste(delta^13, 'C'*' '*'(\u2030)')", "paste(delta^15, 'N'*' '*'(\u2030)')", "'Dry'*' '*'Mass'*' '*'(g)'", "'Plant'*' '*'Height'*' '*'(cm)'"))) %>%
     mutate(Trait = factor(Trait, levels = c("'Plant'*' '*'Height'*' '*'(cm)'", "'Dry'*' '*'Mass'*' '*'(g)'","'Leaf'*' '*'Area'*' '*(cm^2)", "`SLA`*` `*(cm^2/g)", "'Leaf'*' '*'Thickness'*' '*(mm)", "`LDMC`*` `*(g/g)",  "'N'*' '*'(%)'", "'C'*' '*'(%)'", "'P'*' '*'(%)'", "'C'*':'*'N'", "paste(delta^13, 'C'*' '*'(\u2030)')", "paste(delta^15, 'N'*' '*'(\u2030)')" ))) %>%
+    #unnest(aov_tidy) |>
     mutate(term = plyr::mapvalues(term, from = c("Treatment", "Site", "Treatment:Site"), to = c("T", "H", "TxH"))) %>%
     filter(term != "Residuals") %>%
     mutate(test = paste(term, ifelse(p.value < 0.05, "*", ifelse(p.value<0.1 & p.value > 0.05, "+", "")), sep = " ")) %>%
@@ -27,22 +29,23 @@ make_trait_mean_figure <- function(anova_trait_tidy, traitMean){
     mutate(y_max = max(mean), y_min = min(mean)) %>%
     ggplot() +
     geom_boxplot(aes(x = Site, y = mean, fill = Treatment)) +
+    geom_text(aes(label = text, x = 1, y = Inf), vjust = 1.2, size = 3.5, color = "black",  data = anova_text_trait) +
     scale_fill_manual(values = c("darkgray", "red")) +
-    geom_blank(aes(y = y_max + 0.1*abs(y_max))) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.35))) +
     ylab("CWM Trait Value") +
     xlab("Habitat Type") +
-    theme_classic() +
-    theme(text = element_text(size = 15),
-          strip.background = element_blank(),
-          legend.position = "top") +
     facet_wrap(~Trait, scales = "free", labeller = label_parsed) +
-    geom_text(aes(label = text, x = 0, y = Inf, hjust = -0.15, vjust = 1), size = 3.5, color = "black",  data = anova_text_trait)
+    theme_bw() +
+    theme(text = element_text(size = 15),
+          legend.position = "top")
+
+
 
   return(trait_mean_plot)
 }
 
 
-#### Figure 3: Difference fixed and specific mean (ITV) ####
+#### Figure S6: Difference fixed and specific mean (ITV) ####
 
 make_itv_figure <- function(traitMean){
 
@@ -65,78 +68,175 @@ make_itv_figure <- function(traitMean){
     ggplot() +
     geom_boxplot(aes(x = Site, y = itv_diff, fill = Treatment)) +
     geom_hline(aes(yintercept = 0)) +
-    geom_blank(aes(x = Site, y = itv_diff + itv_diff*0.6)) +
-    geom_text(aes(label = Sig, y = Inf, x = Site, group = Treatment, vjust = 1), position = position_dodge(0.75), data = t_test_itv, size = 4.5) +
+    geom_text(aes(label = Sig, y = Inf, x = Site, group = Treatment), vjust = 1.2, position = position_dodge(0.75), data = t_test_itv, size = 4.5) +
     scale_fill_manual(values = c("darkgray", "red")) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.35))) +
     labs(x = "Habitat Type", y = "Specific - fixed (no ITV) trait mean") +
     facet_wrap(~Trait, scales = "free_y", labeller = label_parsed) +
-    theme_classic() +
+    theme_bw() +
     theme(text = element_text(size = 15),
-          strip.background = element_blank(),
           legend.position = "top")
 
   return(itv_plot)
 
 }
 
-#### Fig S5 Trait PCA ####
+#### Fig 2 Trait PCA ####
+
+make_trait_pca_figure <- function(trait_pca_all, trait_pca_SB, trait_pca_CH, trait_pca_DH){
+
+  e_B <- eigenvals(trait_pca_all[[3]])/sum(eigenvals(trait_pca_all[[3]]))
+
+  # make fancy names
+  pca_traits <- fancy_trait_name_dictionary(trait_pca_all[[2]] |>
+                                          rename(Trait = Label))
+
+  p1 <- ggplot(trait_pca_all[[1]], aes(x = PC1, y = PC2, colour = Site)) +
+    geom_point(aes(shape = Treatment), size = 3) +
+    coord_equal() +
+    scale_color_manual(name = "Habitat type",
+                       values = c("blue", "forestgreen", "orange"),
+                       labels = c("Snowbed", "Cassiope heath", "Dryas heath")) +
+    scale_shape_manual(values = c(1, 17),
+                       labels = c("Control", "Warming")) +
+
+    ## arrows
+    geom_text(data = pca_traits, aes(x = PC1 + case_when(PC1 > 0 ~ 0.05,
+                                                         TRUE ~ -0.05),
+                                     y = PC2 + case_when(PC2 > 0 ~ 0.07,
+                                                         Trait == "N (%)" ~ 0.1,
+                                                         TRUE ~ -0.07),
+                                     label = Trait), col = 'grey70') +
+    geom_segment(data = pca_traits, aes(x = 0, y = 0, xend = PC1, yend = PC2),
+                 arrow=arrow(length=unit(0.2,"cm")),
+                 alpha = 0.75, color = 'grey70') +
+
+    # stats
+    geom_text(aes(x = -1, y = 1.5, size = 15, label = "T*** + H**"), colour = "black") +
+    labs(x = glue("PCA1 ({round(e_B[1] * 100, 1)}%)"),
+         y = glue("PCA1 ({round(e_B[2] * 100, 1)}%)"),
+         tag = "A") +
+    theme_bw() +
+    theme(text = element_text(size = 15),
+          legend.position = "top")
 
 
-make_trait_pca_figure <- function(trait_pca_info, pca_res, col, tag){
+  # snowbed
+  e_B_sb <- eigenvals(trait_pca_SB[[3]])/sum(eigenvals(trait_pca_SB[[3]]))
 
-  pca_points <- cbind(trait_pca_info, pca_res$x) %>%
-    rename("Habitat" = "Site") |>
-    mutate(Treatment = recode(Treatment, CTL = "Control", OTC = "Warming"))
-  pca_arrows <- pca_res$rotation
+  # make fancy names
+  pca_sb_traits <- fancy_trait_name_dictionary(trait_pca_SB[[2]] |>
+                                              rename(Trait = Label))
 
-  if(pca_points |> distinct(Habitat) |> count() > 1)
-    {
-    pca_plot <- autoplot(pca_res, data = pca_points,
-                         shape = 'Treatment',
-                         colour = "Habitat",
-                         size = 3,
-                         loadings = TRUE,
-                         loadings.colour = 'grey80',
-                         loadings.label = TRUE,
-                         loadings.label.size = 5,
-                         loadings.label.colour = "grey20",
-                         loadings.label.repel = TRUE,
-                         parse = TRUE) +
-      scale_color_manual(values = c("blue", "forestgreen", "orange")) +
-      scale_shape_manual(values = c(1, 17)) +
-      labs(tag = tag) +
-      theme_classic() +
-      theme(legend.position = "top",
-            text = element_text(size = 12))
+  p_sb <- ggplot(trait_pca_SB[[1]], aes(x = PC1, y = PC2)) +
+    geom_point(aes(shape = Treatment), size = 3, colour = "blue") +
+    coord_equal() +
+    scale_shape_manual(values = c(1, 17),
+                       labels = c("Control", "Warming")) +
+    lims(x = c(-2, 2), y = c(-2, 2)) +
+
+    ## arrows
+    geom_text(data = pca_sb_traits, aes(x = PC1 + case_when(PC1 > 0 ~ 0.05,
+                                                         TRUE ~ -0.05),
+                                     y = PC2 + case_when(PC2 > 0 ~ 0.07,
+                                                         Trait == "N (%)" ~ 0.1,
+                                                         TRUE ~ -0.07),
+                                     label = Trait), col = 'grey70') +
+    geom_segment(data = pca_sb_traits, aes(x = 0, y = 0, xend = PC1, yend = PC2),
+                 arrow=arrow(length=unit(0.2,"cm")),
+                 alpha = 0.75, color = 'grey70') +
+
+    # stats
+    geom_text(aes(x = -1, y = 1.5, size = 15, label = "Y***"), colour = "black") +
+    labs(x = glue("PCA1 ({round(e_B_sb[1] * 100, 1)}%)"),
+         y = glue("PCA1 ({round(e_B_sb[2] * 100, 1)}%)"),
+         title = "Snowbed",
+         tag = "B") +
+    theme_bw() +
+    theme(text = element_text(size = 15),
+          legend.position = "none")
 
 
-  }
-  else{
+  # cassiope
+  e_B_ch <- eigenvals(trait_pca_CH[[3]])/sum(eigenvals(trait_pca_CH[[3]]))
 
-    pca_plot <- autoplot(pca_res, data = pca_points,
-                         shape = 'Treatment',
-                         colour = col,
-                         size = 2,
-                         loadings = TRUE,
-                         loadings.colour = 'grey80',
-                         loadings.label = TRUE,
-                         loadings.label.size = 2.5,
-                         loadings.label.colour = "grey20",
-                         loadings.label.repel = TRUE,
-                         parse = TRUE) +
-      scale_shape_manual(values = c(1, 17)) +
-      labs(tag = tag) +
-      theme_classic() +
-      theme(legend.position = "none",
-            text = element_text(size = 10))
+  # make fancy names
+  pca_ch_traits <- fancy_trait_name_dictionary(trait_pca_CH[[2]] |>
+                                                 rename(Trait = Label))
 
-  }
+  p_ch <- ggplot(trait_pca_CH[[1]], aes(x = PC1, y = PC2)) +
+    geom_point(aes(shape = Treatment), size = 3, colour = "forestgreen") +
+    coord_equal() +
+    scale_shape_manual(values = c(1, 17),
+                       labels = c("Control", "Warming")) +
+    lims(x = c(-2, 2), y = c(-2, 2)) +
+
+    ## arrows
+    geom_text(data = pca_ch_traits, aes(x = PC1 + case_when(PC1 > 0 ~ 0.05,
+                                                            TRUE ~ -0.05),
+                                        y = PC2 + case_when(PC2 > 0 ~ 0.07,
+                                                            Trait == "N (%)" ~ 0.1,
+                                                            TRUE ~ -0.07),
+                                        label = Trait), col = 'grey70') +
+    geom_segment(data = pca_ch_traits, aes(x = 0, y = 0, xend = PC1, yend = PC2),
+                 arrow=arrow(length=unit(0.2,"cm")),
+                 alpha = 0.75, color = 'grey70') +
+
+    # stats
+    geom_text(aes(x = -1, y = 1.5, size = 15, label = "T*** + Y*"), colour = "black") +
+    labs(x = glue("PCA1 ({round(e_B_ch[1] * 100, 1)}%)"),
+         y = glue("PCA1 ({round(e_B_ch[2] * 100, 1)}%)"),
+         title = expression(paste(italic(Cassiope), " heath")),
+         tag = "C") +
+    theme_bw() +
+    theme(text = element_text(size = 15),
+          legend.position = "none")
+
+
+  # dryas
+  e_B_dh <- eigenvals(trait_pca_DH[[3]])/sum(eigenvals(trait_pca_DH[[3]]))
+
+  # make fancy names
+  pca_dh_traits <- fancy_trait_name_dictionary(trait_pca_DH[[2]] |>
+                                                 rename(Trait = Label))
+
+  p_dh <- ggplot(trait_pca_DH[[1]], aes(x = PC1, y = PC2)) +
+    geom_point(aes(shape = Treatment), size = 3, colour = "orange") +
+    coord_equal() +
+    scale_shape_manual(values = c(1, 17),
+                       labels = c("Control", "Warming")) +
+    lims(x = c(-2, 2), y = c(-2, 2)) +
+
+    ## arrows
+    geom_text(data = pca_dh_traits, aes(x = PC1 + case_when(PC1 > 0 ~ 0.05,
+                                                            TRUE ~ -0.05),
+                                        y = PC2 + case_when(PC2 > 0 ~ 0.07,
+                                                            Trait == "N (%)" ~ 0.1,
+                                                            TRUE ~ -0.07),
+                                        label = Trait), col = 'grey70') +
+    geom_segment(data = pca_dh_traits, aes(x = 0, y = 0, xend = PC1, yend = PC2),
+                 arrow=arrow(length=unit(0.2,"cm")),
+                 alpha = 0.75, color = 'grey70') +
+
+    # stats
+    geom_text(aes(x = -1, y = 1.5, size = 15, label = "T* + Y***"), colour = "black") +
+    labs(x = glue("PCA1 ({round(e_B_dh[1] * 100, 1)}%)"),
+         y = glue("PCA1 ({round(e_B_dh[2] * 100, 1)}%)"),
+         title = expression(paste(italic(Dryas), " heath")),
+         tag = "D") +
+    theme_bw() +
+    theme(text = element_text(size = 15),
+          legend.position = "none")
+
+
+  pca_plot <- p1 / (p_sb + p_ch + p_dh) + plot_layout(height = c(3, 1))
 
   return(pca_plot)
 }
 
 
-
+# var_split_exp <- Var_Split_Exp
+# var_split <- Var_Split
 ## Figure S6 Trait variance partitioning
 make_intra_vs_inter_figure <- function(var_split_exp, var_split){
 
@@ -149,8 +249,11 @@ make_intra_vs_inter_figure <- function(var_split_exp, var_split){
     filter(variable != "Covariation", level != "Total", variable != "Total") %>%
     mutate(level = factor(level, levels = c("Habitat", "Treatment", "Habitat:Treatment", "Residuals"))) %>%
     mutate(level = plyr::mapvalues(level, from = c("Habitat", "Treatment", "Habitat:Treatment", "Residuals"), to = c("H", "T", "HxT", "Resid"))) %>%
-    mutate(trait = plyr::mapvalues(trait, from = c("SLA_cm2_g", "LDMC", "Leaf_Area_cm2", "Leaf_Thickness_mm", "N_percent", "C_percent", "P_Ave", "CN_ratio", "dC13_percent", "dN15_percent", "Dry_Mass_g", "Plant_Height_cm"), to = c("`SLA`*` `*(cm^2/g)", "`LDMC`*` `*(g/g)", "'Leaf'*' '*'Area'*' '*(cm^2)", "'Leaf'*' '*'Thickness'*' '*(mm)", "'N'*' '*'(%)'", "'C'*' '*'(%)'", "'P'*' '*'(%)'", "'C'*':'*'N'", "paste(delta^13, 'C'*' '*'(\u2030)')", "paste(delta^15, 'N'*' '*'(\u2030)')", "'Dry'*' '*'Mass'*' '*'(g)'", "'Plant'*' '*'Height'*' '*'(cm)'"))) %>%
-    mutate(trait = factor(trait, levels = c("'Plant'*' '*'Height'*' '*'(cm)'", "'Dry'*' '*'Mass'*' '*'(g)'","'Leaf'*' '*'Area'*' '*(cm^2)", "`SLA`*` `*(cm^2/g)",  "'Leaf'*' '*'Thickness'*' '*(mm)", "`LDMC`*` `*(g/g)",  "'N'*' '*'(%)'", "'C'*' '*'(%)'", "'P'*' '*'(%)'", "'C'*':'*'N'", "paste(delta^13, 'C'*' '*'(\u2030)')", "paste(delta^15, 'N'*' '*'(\u2030)')" ))) %>%
+    mutate(trait = plyr::mapvalues(trait,
+                                   from = c("SLA_cm2_g", "LDMC", "Leaf_Area_cm2", "Leaf_Thickness_mm", "N_percent", "C_percent", "P_Ave", "CN_ratio", "dC13_percent", "dN15_percent", "Dry_Mass_g", "Plant_Height_cm"),
+                                   to = c("`SLA`*` `*(cm^2/g)", "`LDMC`*` `*(g/g)", "'Leaf'*' '*'Area'*' '*(cm^2)", "'Leaf'*' '*'Thickness'*' '*(mm)", "'N'*' '*'(%)'", "'C'*' '*'(%)'", "'P'*' '*'(%)'", "'C'*':'*'N'", "paste(delta^13, 'C'*' '*'(\u2030)')", "paste(delta^15, 'N'*' '*'(\u2030)')", "'Dry'*' '*'Mass'*' '*'(g)'", "'Plant'*' '*'Height'*' '*'(cm)'"))) %>%
+    mutate(trait = factor(trait,
+                          levels = c("'Plant'*' '*'Height'*' '*'(cm)'", "'Dry'*' '*'Mass'*' '*'(g)'","'Leaf'*' '*'Area'*' '*(cm^2)", "`SLA`*` `*(cm^2/g)",  "'Leaf'*' '*'Thickness'*' '*(mm)", "`LDMC`*` `*(g/g)",  "'N'*' '*'(%)'", "'C'*' '*'(%)'", "'P'*' '*'(%)'", "'C'*':'*'N'", "paste(delta^13, 'C'*' '*'(\u2030)')", "paste(delta^15, 'N'*' '*'(\u2030)')" ))) %>%
     ggplot() +
     geom_bar(aes(x = level, y = value, fill = variable), stat = "identity") +
     geom_point(aes(x = level, y  = value), data = var_split, size = 1) +

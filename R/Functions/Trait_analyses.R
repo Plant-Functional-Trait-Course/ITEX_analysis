@@ -105,31 +105,47 @@ make_bootstrapping <- function(comm_raw, trait_raw){
 }
 
 
-
-make_trait_pca <- function(Trait_Mean){
+make_trait_pca <- function(Trait_Mean, habitat){
 
   # make data wide
   trait_pca <- Trait_Mean %>%
     select(-mean_noitv) %>%
-    mutate(Trait = plyr::mapvalues(Trait,
-                                   from = c("SLA_cm2_g", "LDMC", "Leaf_Area_cm2", "Leaf_Thickness_mm", "N_percent", "C_percent", "P_Ave", "CN_ratio", "dC13_percent", "dN15_percent", "Dry_Mass_g", "Plant_Height_cm"),
-                                   to = c("SLA", "LDMC", "Leaf Area", "Leaf Thickness", "%N", "%C", "%P", "C:N", "delta13C", "delta15N", "Dry Mass", "Plant Height"))) %>%
+    # mutate(Trait = plyr::mapvalues(Trait,
+    #                                from = c("SLA_cm2_g", "LDMC", "Leaf_Area_cm2", "Leaf_Thickness_mm", "N_percent", "C_percent", "P_Ave", "CN_ratio", "dC13_percent", "dN15_percent", "Dry_Mass_g", "Plant_Height_cm"),
+    #                                to = c("SLA", "LDMC", "Leaf Area", "Leaf Thickness", "%N", "%C", "%P", "C:N", "delta13C", "delta15N", "Dry Mass", "Plant Height"))) %>%
     pivot_wider(names_from = Trait, values_from = mean)
 
   # select traits
   trait_pca_data <- trait_pca %>%
-    select("%C":"SLA")
+    select("C_percent":"SLA_cm2_g")
 
   # meta data
   trait_pca_info <- trait_pca %>%
     select(Site:Treatment)
 
   # make pca
-  pca_res <- prcomp(trait_pca_data, center = T, scale. = T)
+  res_pca <- rda(trait_pca_data, center = TRUE, scale = TRUE)
 
-  return(list(pca_res, pca_res$x, trait_pca_info))
+  if(habitat == "CH"){
+
+    out <- bind_cols(trait_pca_info, fortify(res_pca, axes = 1:5) |>
+                       filter(Score == "sites"))
+    tr <- fortify(res_pca, axes = 1:5) |>
+      filter(Score == "species")
+
+  } else {
+
+    out <- bind_cols(trait_pca_info, fortify(res_pca) |>
+                       filter(Score == "sites"))
+    tr <- fortify(res_pca) |>
+      filter(Score == "species")
+  }
+
+  return(list(out, tr, res_pca))
 
 }
+
+
 
 
 
