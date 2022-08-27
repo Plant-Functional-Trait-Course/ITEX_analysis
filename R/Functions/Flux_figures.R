@@ -14,27 +14,37 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
     mutate(Cflux = recode(Cflux, GPP = "GEP"))
 
 
-  p1 <- trait_model_output %>%
-    mutate(ITV = ITV - noITV,
-           ITV = abs(ITV)) %>%
-    gather(key = ITV, value = Var.exp, noITV:ITV) %>%
-    ggplot(aes(x = Cflux, y = Var.exp * 100, fill = ITV)) +
+  # Variance explained without ITV
+  p1 <- model_selection_output %>%
+    filter(ITV == "no_ITV") %>%
+    ggplot(aes(x = Cflux, y = value*100, fill = Variables)) +
     geom_col(position = "stack") +
-    scale_fill_manual(values = c("grey20", "grey70"),
-                      #limits = c("ITV", "noITV"),
-                      labels = c("intra", "inter"),
-                      name = "Trait variation") +
+    scale_fill_manual(values = c("grey90", "#0072B2", "#0072B2", "#009E73" , "#009E73", "#F0E442", "#F0E442"),
+                      labels = c("Environment", "Environment & Taxonomy", "Taxonomy", "All", "Taxonomy & Trait", "Environment & Trait", "Trait")) +
+    geom_col_pattern(aes(#specify angle
+      pattern_angle = Variables,
+      # specify patter
+      pattern = Variables),
+      pattern_fill = "black",
+      pattern_spacing = 0.01) +
+    # distinguish pattern type
+    scale_pattern_manual(values = c("stripe", "stripe", "none", "stripe" , "none", "stripe", "none"),
+                         labels = c("Environment", "Environment & Taxonomy", "Taxonomy", "All", "Taxonomy & Trait", "Environment & Trait", "Trait")) +
+    #distinguish pattern angle
+    scale_pattern_angle_manual(values = c(45, 45, 0, 45 , 0, 45, 0),
+                               labels = c("Environment", "Environment & Taxonomy", "Taxonomy", "All", "Taxonomy & Trait", "Environment & Trait", "Trait"),
+                               guide = guide_legend(override.aes = list(pattern_spacing = 0.005))) +
     geom_hline(yintercept = 0, colour = "grey40") +
-    labs(x = "", y = "Explained variance %", tag = "C") +
-    scale_y_continuous(limits = c(-10, 70),
-                       breaks = seq(-10, 70, by = 10)) +
+    scale_y_continuous(limits = c(-10, 70), breaks = seq(-10, 70, by = 10)) +
+    labs(x = "", y = "Explained variance %", title = "turnover", tag = "A") +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.text = element_text(size = 13),
-          axis.title = element_text(size = 14),
-          legend.position = c(0.2, 0.8))
+          axis.title = element_text(size = 14))
 
+
+  # Variance explained with ITV
   p2 <- model_selection_output %>%
     filter(ITV == "ITV") %>%
     ggplot(aes(x = Cflux, y = value*100, fill = Variables)) +
@@ -56,7 +66,7 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
                                guide = guide_legend(override.aes = list(pattern_spacing = 0.005))) +
     geom_hline(yintercept = 0, colour = "grey40") +
     scale_y_continuous(limits = c(-10, 70), breaks = seq(-10, 70, by = 10)) +
-    labs(x = "", y = "Explained variance %", tag = "A") +
+    labs(x = "", y = "", title = "turnover + ITV", tag = "B") +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -67,38 +77,31 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
           #legend.position = c(0.65,0.85))
 
 
-
-  p3 <- model_selection_output %>%
-    filter(ITV == "no_ITV") %>%
-    ggplot(aes(x = Cflux, y = value*100, fill = Variables)) +
+  # Variance explained by traits
+  p3 <- trait_model_output %>%
+    mutate(ITV = ITV - noITV,
+           ITV = abs(ITV)) %>%
+    gather(key = ITV, value = Var.exp, noITV:ITV) %>%
+    ggplot(aes(x = Cflux, y = Var.exp * 100, fill = ITV)) +
     geom_col(position = "stack") +
-    scale_fill_manual(values = c("grey90", "#0072B2", "#0072B2", "#009E73" , "#009E73", "#F0E442", "#F0E442"),
-                      labels = c("Environment", "Environment & Taxonomy", "Taxonomy", "All", "Taxonomy & Trait", "Environment & Trait", "Trait")) +
-    geom_col_pattern(aes(#specify angle
-      pattern_angle = Variables,
-      # specify patter
-      pattern = Variables),
-      pattern_fill = "black",
-      pattern_spacing = 0.01) +
-    # distinguish pattern type
-    scale_pattern_manual(values = c("stripe", "stripe", "none", "stripe" , "none", "stripe", "none"),
-                         labels = c("Environment", "Environment & Taxonomy", "Taxonomy", "All", "Taxonomy & Trait", "Environment & Trait", "Trait")) +
-    #distinguish pattern angle
-    scale_pattern_angle_manual(values = c(45, 45, 0, 45 , 0, 45, 0),
-                               labels = c("Environment", "Environment & Taxonomy", "Taxonomy", "All", "Taxonomy & Trait", "Environment & Trait", "Trait"),
-                               guide = guide_legend(override.aes = list(pattern_spacing = 0.005))) +
+    scale_fill_manual(values = c("grey20", "grey70"),
+                      #limits = c("ITV", "noITV"),
+                      labels = c("intra", "inter"),
+                      name = "Trait variation") +
     geom_hline(yintercept = 0, colour = "grey40") +
-    scale_y_continuous(limits = c(-10, 70), breaks = seq(-10, 70, by = 10)) +
-    labs(x = "", y = "", tag = "B") +
+    labs(x = "", y = "Explained variance %", tag = "C") +
+    scale_y_continuous(limits = c(-10, 70),
+                       breaks = seq(-10, 70, by = 10)) +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.text = element_text(size = 13),
-          axis.title = element_text(size = 14))
+          axis.title = element_text(size = 14),
+          legend.position = c(0.2, 0.8))
 
-  p4 <- p2 + p3 + plot_layout(guides = 'collect') & theme(legend.position = 'bottom')
+  p4 <- p1 + p2 + plot_layout(guides = 'collect') & theme(legend.position = 'bottom')
 
-  carbon_flux_figure <- p4 / (p1 + plot_spacer())
+  carbon_flux_figure <- p4 / (p3 + plot_spacer())
 
   return(carbon_flux_figure)
 
@@ -187,7 +190,7 @@ make_soil_microclimate_figure <- function(Flux_and_Traits){
 
 #### Figure S7 mean fluxes ####
 
-make_flux_mean_figures <- function(Flux_and_Traits){
+make_flux_mean_figures <- function(Flux_and_Traits, soil_resp){
 
   flux_means <- Flux_and_Traits %>%
     select(Site, PlotID, Treatment, NEE_ln, ER_ln, GPP700) |>
@@ -203,77 +206,52 @@ make_flux_mean_figures <- function(Flux_and_Traits){
     geom_boxplot() +
     scale_size_manual(values=c(3,3,3)) +
     scale_fill_manual(values = c('gray70', 'red')) +
-    labs(x = "Habitat type") +
+    labs(x = "") +
     #ylab(bquote('NEE ('*mu~'mol' ~CO[2]~ m^-2~s^-1*')')) +
     #ylim(-9, 0.5) +
-    facet_wrap(~ variable2, scales = "free_y", labeller = label_parsed) +
-    theme_bw()
-
-    # only for soil resp panel
-    # stat_summary(geom = 'text', label = c('a', 'b', 'a'),
-    #              fun = max,
-    #              vjust = -1,
-    #              size = 5)
-
-  # NEEplot <- ggplot(Flux_and_Traits, aes(x = Site, y = NEE_ln, fill = Treatment)) +
-  #   geom_boxplot() +
-  #   scale_size_manual(values=c(3,3,3)) +
-  #   scale_fill_manual(values = c('gray70', 'red')) +
-  #   labs(x = "Habitat") +
-  #   ylab(bquote('NEE ('*mu~'mol' ~CO[2]~ m^-2~s^-1*')')) +
-  #   ylim(-9, 0.5) +
-  #   theme(
-  #     panel.grid.major = element_blank(),
-  #     panel.grid.minor = element_blank(),
-  #     panel.background = element_blank(),
-  #     axis.line = element_line(colour = "black"),
-  #     legend.position = "none"
-  #   ) +
-  #   stat_summary(geom = 'text', label = c('a', 'b', 'a'),
-  #                fun = max,
-  #                vjust = -1,
-  #                size = 5)
+    facet_wrap(~ variable2, scales = "free_y", labeller = label_parsed, nrow = 2) +
+    tag_facets(tag_levels = c("A", "B", "C"),
+               tag_suffix = "", ) +
+    theme_bw() +
+    theme(tagger.panel.tag.background = element_rect(fill = "white", colour = "white"),
+          panel.spacing = unit(0.8, "cm"),
+          legend.position = "top",
+          #plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm")
+          )
 
 
-  # #### figure code for Reco ####
-  # #pdf("Reco_2019.pdf")
-  # Recoplot <- ggplot(ITEX.mean.fluxes, aes(x = Site, y = ER_ln, fill = Treatment)) +
-  #   geom_boxplot() +
-  #   scale_fill_manual(values = c('gray70', 'red')) +
-  #   labs(x = "Habitat") +
-  #   ylab(bquote('Reco ('*mu~'mol' ~CO[2]~ m^-2~s^-1*')')) +
-  #   theme(
-  #     panel.grid.major = element_blank(),
-  #     panel.grid.minor = element_blank(),
-  #     panel.background = element_blank(),
-  #     axis.line = element_line(colour = "black"),
-  #     legend.position = "none") +
-  #   stat_summary(geom = 'text', label = c('a', 'ab', 'b'),
-  #                fun = max,
-  #                vjust = -1,
-  #                size = 5) +
-  #   ylim(-9, 0.5)
+
+    Rsoil_plot = soil_resp |>
+      mutate(variable = "SoilR)",
+             variable = factor(variable,
+                                labels = c("Rsoil~(µmol~CO[2]~m^{-2}~day^{-1})")),
+             Treatment = recode(Treatment, "OTC" = "Warming"),
+             Treatment = factor(Treatment)) |>
+      ggplot(aes(x = Treatment,
+                         y = -Flux_g_CO2_m2_day ,  ## NOTE: added "-" in front of data
+                         fill = Treatment)) +
+      geom_boxplot() +
+      scale_size_manual(values = c(3,3)) +
+      scale_fill_manual(values = c('grey', 'red'), label = c("Control", "Warming")) +
+      labs(x = "", y = "") +
+      #ylab(bquote('PAR-Standardized GPP ('*mu~'mol' ~CO[2]~ m^-2~s^-1*')')) +
+      #ylab(bquote('Rsoil ('*'g' ~CO[2]~ m^-2~day^-1*')')) +
+      ylim(-3.5, 0.3) +
+      stat_summary(geom = 'text', label = c('a', 'b'), fun = max, vjust = -1, size = 3) +
+      geom_text(aes(x = 0.5, y = 0.1, label = "D"), size = 3) +
+      theme_bw() +
+      theme(legend.position = "none",
+            plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm")) +
+      facet_wrap(~ variable, labeller = label_parsed)
 
 
-  # #### figure code for GEP ####
-  # #pdf("GEP_2019.pdf")
-  # GEPplot <- ggplot(ITEX.mean.fluxes, aes(x = Site, y = GPP700, fill = Treatment)) +
-  #   geom_boxplot() +
-  #   scale_fill_manual(values = c('gray70', 'red')) +
-  #   labs(x = "Habitat") +
-  #   ylab(bquote('PAR-Standardized GPP ('*mu~'mol' ~CO[2]~ m^-2~s^-1*')')) +
-  #   theme(
-  #     panel.grid.major = element_blank(),
-  #     panel.grid.minor = element_blank(),
-  #     panel.background = element_blank(),
-  #     axis.line = element_line(colour = "black"),
-  #     legend.position = "none") +
-  #   geom_text(aes(y = 11), label = c('a', 'ab', 'b')) +
-  #   ylim(-0.5, 9)
-  # geom_text(geom = 'text', label = c('a', 'ab', 'b'),
-  #           fun = max,
-  #           vjust = -1,
-  #           size = 5)
+    layout <- c(
+      area(t = 1, l = 1, b = 4, r = 4),
+      area(t = 3, l = 3, b = 4, r = 4)
+    )
+    flux_mean_plot = flux_means + Rsoil_plot +
+      plot_layout(design = layout)
 
-  return(flux_means)
+
+  return(flux_mean_plot)
 }

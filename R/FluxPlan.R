@@ -53,7 +53,7 @@ FluxPlan <- list(
   # Fig S7 Mean fluxes
   tar_target(
     name = Fig_S7_Mean_fluxes,
-    command = make_flux_mean_figures(Flux_and_Traits)
+    command = make_flux_mean_figures(Flux_and_Traits, soil_resp)
   ),
 
   # Fig S8 Effect size plot
