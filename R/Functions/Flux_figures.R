@@ -36,7 +36,7 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
                                guide = guide_legend(override.aes = list(pattern_spacing = 0.005))) +
     geom_hline(yintercept = 0, colour = "grey40") +
     scale_y_continuous(limits = c(-10, 70), breaks = seq(-10, 70, by = 10)) +
-    labs(x = "", y = "Explained variance %", title = "Turnover", tag = "A") +
+    labs(x = "", y = "Explained variance %", title = "Interspecific", tag = "A") +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -66,7 +66,7 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
                                guide = guide_legend(override.aes = list(pattern_spacing = 0.005))) +
     geom_hline(yintercept = 0, colour = "grey40") +
     scale_y_continuous(limits = c(-10, 70), breaks = seq(-10, 70, by = 10)) +
-    labs(x = "", y = "", title = "Turnover + ITV", tag = "B") +
+    labs(x = "", y = "", title = "Intraspecific", tag = "B") +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -201,7 +201,7 @@ make_flux_mean_figures <- function(Flux_and_Traits, soil_resp){
     mutate(variable2 = factor(variable,
                               labels = c("NEE~(µmol~CO[2]~m^{-2}~s^{-1})",
                                          "PAR~stand~GEP~(µmol~CO[2]~m^{-2}~s^{-1})",
-                                         "Reco~(µmol~CO[2]~m^{-2}~s^{-1})"))) |>
+                                         "R[eco]~(µmol~CO[2]~m^{-2}~s^{-1})"))) |>
     ggplot(aes(x = Site, y = value, fill = Treatment)) +
     geom_boxplot() +
     scale_size_manual(values = c(3, 3, 3)) +
@@ -222,7 +222,7 @@ make_flux_mean_figures <- function(Flux_and_Traits, soil_resp){
     Rsoil_plot = soil_resp |>
       mutate(variable = "SoilR)",
              variable = factor(variable,
-                                labels = c("Rsoil~(µmol~CO[2]~m^{-2}~day^{-1})")),
+                                labels = c("R[soil]~(µmol~CO[2]~m^{-2}~day^{-1})")),
              Treatment = recode(Treatment, "OTC" = "Warming"),
              Treatment = factor(Treatment)) |>
       ggplot(aes(x = Treatment,
