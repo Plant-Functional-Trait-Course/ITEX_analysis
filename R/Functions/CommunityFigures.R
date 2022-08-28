@@ -38,7 +38,7 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
 
     p_all <- p1 +
       labs(x = glue("PCA1 ({round(e_B[1] * 100, 1)}%)"),
-           y = glue("PCA1 ({round(e_B[2] * 100, 1)}%)"),
+           y = glue("PCA2 ({round(e_B[2] * 100, 1)}%)"),
            tag = "A") +
       xlim(-3, 3.8) +
       # species names
@@ -66,7 +66,7 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
   p_sb <- p1 %+% (pca_sp_sb[[1]]) +
     geom_text(aes(x = 1, y = -Inf, label = "Y***"), vjust = -0.3, size = 5, colour = "black") +
     labs(x = glue("PCA1 ({round(eig_sb[1] * 100, 1)}%)"),
-         y = glue("PCA1 ({round(eig_sb[2] * 100, 1)}%)"),
+         y = glue("PCA2 ({round(eig_sb[2] * 100, 1)}%)"),
          title = "Snowbed",
          tag = "B")
 
@@ -78,7 +78,7 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
     geom_text(aes(x = 1, y = -Inf, label = "T*** + Y*"), vjust = -0.3, size = 5, colour = "black") +
     scale_color_manual(values = "forestgreen") +
     labs(x = glue("PCA1 ({round(eig_ch[1] * 100, 1)}%)"),
-         y = glue("PCA1 ({round(eig_ch[2] * 100, 1)}%)"),
+         y = glue("PCA2 ({round(eig_ch[2] * 100, 1)}%)"),
          title = expression(paste(italic(Cassiope), " heath")),
          tag = "C")
 
@@ -90,7 +90,7 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
     geom_text(aes(x = 2, y = -Inf, label = "T* + Y***"), vjust = -0.3, size = 5, colour = "black") +
     scale_color_manual(values = "orange") +
     labs(x = glue("PCA1 ({round(eig_dh[1] * 100, 1)}%)"),
-         y = glue("PCA1 ({round(eig_dh[2] * 100, 1)}%)"),
+         y = glue("PCA2 ({round(eig_dh[2] * 100, 1)}%)"),
          title = expression(paste(italic(Dryas), " heath")),
          tag = "D")
 

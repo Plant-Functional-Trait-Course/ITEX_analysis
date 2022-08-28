@@ -2,12 +2,10 @@
 
 #### TRAIT BOOTSTRAPPING ####
 
-#comm_raw <- Community
-#trait_raw <- Traits
-make_bootstrapping <- function(comm_raw, trait_raw){
+make_bootstrapping <- function(Community, Traits){
 
   #prepare community data
-  comm <- comm_raw %>%
+  comm <- Community %>%
     filter(FunctionalGroup != "lichen", FunctionalGroup != "moss", FunctionalGroup != "liverwort", FunctionalGroup != "fungi") %>%
     select(-FunctionalGroup) %>%
     filter(Taxon != "equisetum arvense", Taxon != "equisetum scirpoides") %>%
@@ -15,7 +13,7 @@ make_bootstrapping <- function(comm_raw, trait_raw){
     mutate(Site_trt = paste0(Site, Treatment))
 
   #prepare trait data
-  trait <- trait_raw %>%
+  trait <- Traits %>%
     select(Treatment, Site, PlotID, Taxon, Trait, Value) %>%
     filter(!is.na(Value)) %>%
     mutate(Site_trt = paste0(Site, Treatment)) %>%
@@ -23,13 +21,13 @@ make_bootstrapping <- function(comm_raw, trait_raw){
     filter(Trait != "Wet_Mass_g")
 
   #prepare trait data without intraspecific variation
-  trait.null <- trait_raw %>%
+  trait.null <- Traits %>%
     select(Treatment, Site, PlotID, Taxon, Trait, Value) %>%
     filter(!is.na(Value)) %>%
     filter(Treatment == "CTL") %>%
     filter(Trait != "Wet_Mass_g") %>%
     group_by(Taxon, Trait) %>%
-    summarize(Value = mean(as.numeric(Value), na.rm = T)) %>%
+    summarise(Value = mean(as.numeric(Value), na.rm = T)) %>%
     right_join(trait, by = c("Taxon", "Trait")) %>%
     select(-Value.y, "Value" = Value.x) %>%
     mutate(Site = factor(Site, levels = c("SB", "CH", "DH")))
@@ -110,9 +108,6 @@ make_trait_pca <- function(Trait_Mean, habitat){
   # make data wide
   trait_pca <- Trait_Mean %>%
     select(-mean_noitv) %>%
-    # mutate(Trait = plyr::mapvalues(Trait,
-    #                                from = c("SLA_cm2_g", "LDMC", "Leaf_Area_cm2", "Leaf_Thickness_mm", "N_percent", "C_percent", "P_Ave", "CN_ratio", "dC13_percent", "dN15_percent", "Dry_Mass_g", "Plant_Height_cm"),
-    #                                to = c("SLA", "LDMC", "Leaf Area", "Leaf Thickness", "%N", "%C", "%P", "C:N", "delta13C", "delta15N", "Dry Mass", "Plant Height"))) %>%
     pivot_wider(names_from = Trait, values_from = mean)
 
   # select traits
@@ -152,10 +147,10 @@ make_trait_pca <- function(Trait_Mean, habitat){
 #### Intraspecific vs. interspecific variation ####
 
 
-Intra_vs_Inter <- function(trait_raw, traitMean){
+Intra_vs_Inter <- function(Traits, Trait_Mean){
 
   #prepare trait data
-  trait <- trait_raw %>%
+  trait <- Traits %>%
     select(Treatment, Site, PlotID, Taxon, Trait, Value) %>%
     filter(!is.na(Value)) %>%
     mutate(Site_trt = paste0(Site, Treatment)) %>%
@@ -175,7 +170,7 @@ Intra_vs_Inter <- function(trait_raw, traitMean){
 
   }
 
-  var_split <- traitMean %>%
+  var_split <- Trait_Mean %>%
     group_by(Trait) %>%
     do(test = trait.flex.anova(~Site * Treatment, mean, mean_noitv, data = .))
 
@@ -193,9 +188,9 @@ Intra_vs_Inter <- function(trait_raw, traitMean){
 }
 
 
-Intra_vs_Inter_var_split <- function(var_split_exp){
+Intra_vs_Inter_var_split <- function(Var_Split_Exp){
 
-  var_split <- var_split_exp %>%
+  var_split <- Var_Split_Exp %>%
     mutate(level = trimws(level)) %>%
     filter(RelSumSq.Turnover < 999) %>%
     rename(Turnover = RelSumSq.Turnover, Intraspecific = RelSumSq.Intraspec., Covariation = RelSumSq.Covariation, Total = RelSumSq.Total) %>%
