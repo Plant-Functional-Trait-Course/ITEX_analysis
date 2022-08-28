@@ -245,9 +245,9 @@ make_trait_pca_figure <- function(trait_pca_all, trait_pca_SB, trait_pca_CH, tra
 # var_split_exp <- Var_Split_Exp
 # var_split <- Var_Split
 ## Figure S6 Trait variance partitioning
-make_intra_vs_inter_figure <- function(var_split_exp, var_split){
+make_intra_vs_inter_figure <- function(Var_Split_Exp, Var_Split){
 
-  varpart_graph <- var_split_exp %>%
+  varpart_graph <- Var_Split_Exp %>%
     mutate(level = trimws(level)) %>%
     filter(RelSumSq.Turnover < 999) %>%
     rename(Turnover = RelSumSq.Turnover, Intraspecific = RelSumSq.Intraspec., Covariation = RelSumSq.Covariation, Total = RelSumSq.Total) %>%
@@ -256,22 +256,18 @@ make_intra_vs_inter_figure <- function(var_split_exp, var_split){
     filter(variable != "Covariation", level != "Total", variable != "Total") %>%
     mutate(level = factor(level, levels = c("Habitat", "Treatment", "Habitat:Treatment", "Residuals"))) %>%
     mutate(level = plyr::mapvalues(level, from = c("Habitat", "Treatment", "Habitat:Treatment", "Residuals"), to = c("H", "T", "HxT", "Resid"))) %>%
-    mutate(trait = plyr::mapvalues(trait,
-                                   from = c("SLA_cm2_g", "LDMC", "Leaf_Area_cm2", "Leaf_Thickness_mm", "N_percent", "C_percent", "P_Ave", "CN_ratio", "dC13_percent", "dN15_percent", "Dry_Mass_g", "Plant_Height_cm"),
-                                   to = c("`SLA`*` `*(cm^2/g)", "`LDMC`*` `*(g/g)", "'Leaf'*' '*'Area'*' '*(cm^2)", "'Leaf'*' '*'Thickness'*' '*(mm)", "'N'*' '*'(%)'", "'C'*' '*'(%)'", "'P'*' '*'(%)'", "'C'*':'*'N'", "paste(delta^13, 'C'*' '*'(\u2030)')", "paste(delta^15, 'N'*' '*'(\u2030)')", "'Dry'*' '*'Mass'*' '*'(g)'", "'Plant'*' '*'Height'*' '*'(cm)'"))) %>%
-    mutate(trait = factor(trait,
-                          levels = c("'Plant'*' '*'Height'*' '*'(cm)'", "'Dry'*' '*'Mass'*' '*'(g)'","'Leaf'*' '*'Area'*' '*(cm^2)", "`SLA`*` `*(cm^2/g)",  "'Leaf'*' '*'Thickness'*' '*(mm)", "`LDMC`*` `*(g/g)",  "'N'*' '*'(%)'", "'C'*' '*'(%)'", "'P'*' '*'(%)'", "'C'*':'*'N'", "paste(delta^13, 'C'*' '*'(\u2030)')", "paste(delta^15, 'N'*' '*'(\u2030)')" ))) %>%
+    rename(Trait = trait) %>%
+    fancy_trait_name_dictionary(.) |>
     ggplot() +
     geom_bar(aes(x = level, y = value, fill = variable), stat = "identity") +
-    geom_point(aes(x = level, y  = value), data = var_split, size = 1) +
-    facet_wrap(~trait, nrow = 3, labeller = label_parsed) +
-    theme_classic() +
-    theme(text = element_text(size = 15), legend.position = "top",
-          strip.background = element_blank()) +
-    xlab(NULL) +
-    ylab("Proportion Variation Explained") +
-    scale_fill_manual(values = c("blue", "darkorange"), name = "Source of Variation") +
-    scale_x_discrete(drop = FALSE)
+    geom_point(aes(x = level, y  = value), data = Var_Split, size = 1) +
+    labs(x = "", y = "Proportion variation explained") +
+    scale_fill_manual(values = c("blue", "darkorange"), name = "Source of variation") +
+    scale_x_discrete(drop = FALSE) +
+    facet_wrap(~Trait_fancy, nrow = 3, labeller = label_parsed) +
+    theme_bw() +
+    theme(text = element_text(size = 15),
+          legend.position = "top")
 
 }
 
