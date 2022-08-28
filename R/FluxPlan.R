@@ -44,16 +44,10 @@ FluxPlan <- list(
     command = make_flux_figure(Trait_Model_Output, Model_Output)
   ),
 
-  # Fig S2 Microclimate
-  tar_target(
-    name = Fig_S2_Microclimate,
-    command = make_soil_microclimate_figure(Flux_and_Traits)
-  ),
-
   # Fig S7 Mean fluxes
   tar_target(
     name = Fig_S7_Mean_fluxes,
-    command = make_flux_mean_figures(Flux_and_Traits)
+    command = make_flux_mean_figures(Flux_and_Traits, soil_resp)
   ),
 
   # Fig S8 Effect size plot

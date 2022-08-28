@@ -7,7 +7,7 @@ library("targets")
 library("tarchetypes")
 # install.packages("remotes")
 #remotes::install_github("Between-the-Fjords/dataDownloader")
-tar_option_set(packages = c("dataDownloader", "tidyverse", "lubridate", "readxl", "traitstrap", "vegan", "ggvegan", "broom", "patchwork", "ape", "nlme", "lme4", "broom.mixed", "MuMIn", "ggpubr", "ggfortify", "ggpattern"))
+tar_option_set(packages = c("dataDownloader", "tidyverse", "lubridate", "readxl", "traitstrap", "vegan", "ggvegan", "broom", "patchwork", "ape", "nlme", "lme4", "broom.mixed", "MuMIn", "ggpubr", "ggfortify", "ggpattern", "tagger", "glue", "Hmisc"))
 
 
 #theme_set(theme_bw(base_size = 15))
@@ -29,6 +29,7 @@ source("R/Functions/inter_intra_anova.R")
 source("R/Functions/Climate_analyses.R")
 source("R/Functions/Flux_analyses.R")
 source("R/Functions/Flux_figures.R")
+source("R/Functions/fancy_traits.R")
 
 # render ms
 # ManuscriptPlan <- list(

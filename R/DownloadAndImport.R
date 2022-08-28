@@ -72,15 +72,12 @@ DataDownloadPlan <- list(
   # C-fluxes
   tar_target(name = cflux_download,
              command = "data/Cflux_SV_ITEX_2018.csv",
+             format = "file"),
+
+  # Soil resp
+  tar_target(name = soilresp_download,
+             command = "data/Endalen_FD_chambers_updatedHL.csv",
              format = "file")
-  # tar_target(
-  #   name = cflux_download,
-  #   command = get_file(node = "smbqh",
-  #                      file = "Cflux_SV_ITEX_2018.csv",
-  #                      path = "data",
-  #                      remote_path = "C-Flux"),
-  #   format = "file"
-  # )
 
 )
 
@@ -168,6 +165,67 @@ DataImportPlan <- list(
         #Weather,
         #Notes = comment
       )
+  ),
+
+  # soil respiration data
+  tar_target(
+    name = soil_resp,
+    command = {
+
+      soilresp_raw <- read.csv(file = soilresp_download)
+
+      # Renaming columns and condensing data to date means
+      soilresp_raw <- soilresp_raw |>
+        slice(-c(1:2)) |>
+        mutate(DateTime = as.POSIXct(as.character(X)),
+               Date = as.Date(DateTime),
+               AirTemp = as.numeric(as.character(X.1)),
+               OTC1 = as.numeric(as.character(OTC)),
+               OTC2 = as.numeric(as.character(OTC.1)),
+               OTC3 = as.numeric(as.character(OTC.2)),
+               CTL1 = as.numeric(as.character(Control)),
+               CTL2 = as.numeric(as.character(Control.1)),
+               CTL3 = as.numeric(as.character(Control.2))) %>%
+        select(-c(X, X.1, OTC, OTC.1, OTC.2, Control, Control.1, Control.2)) %>%
+        group_by(Date) %>%
+        summarize_all(mean, na.rm=TRUE)
+
+      # Converting to long-format and calculating flux as g CO2/day
+      soilresp_raw_long <- soilresp_raw %>%
+        gather(Plot, Flux, OTC1:CTL3, factor_key=FALSE) %>%
+        mutate(Treatment=ifelse(startsWith(Plot,"O"), "OTC", "Control") ,
+               Flux_g_CO2_m2_day = (Flux*3600*24*44/(10^6))
+        ) %>%
+        rename(Flux_umol_CO2_m2_s = Flux)
+
+        # Changing NaNs to NAs
+        soilresp_raw_long[ is.na(soilresp_raw_long) ] <- NA
+
+      # Summarizing for July 2015, 2016, and 2017  (apparently there are 2016 data?)
+      ITEX.FD.data.GROW2015 <- soilresp_raw_long %>%
+        filter(Date >= "2015-07-01" & Date <= "2015-07-31") %>%
+        group_by(Plot, Treatment) %>%
+        summarise_all(mean, na.rm=TRUE)
+
+      ITEX.FD.data.GROW2016 <- soilresp_raw_long %>%
+        filter(Date >= "2016-07-01" & Date <= "2016-07-31") %>%
+        group_by(Plot, Treatment) %>%
+        summarise_all(mean, na.rm=TRUE)
+
+      ITEX.FD.data.GROW2017 <- soilresp_raw_long %>%
+        filter(Date >= "2017-07-01" & Date <= "2017-07-31") %>%
+        group_by(Plot, Treatment) %>%
+        summarise_all(mean, na.rm=TRUE)
+
+      soil_resp <- bind_rows(ITEX.FD.data.GROW2015,
+                                   ITEX.FD.data.GROW2016,
+                                   ITEX.FD.data.GROW2017) %>%
+        mutate(Year = year(Date))
+
+
+    }
+
   )
+
 
 )

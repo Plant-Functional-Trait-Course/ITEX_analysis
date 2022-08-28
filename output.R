@@ -8,49 +8,58 @@ library(vegan)
 library(ggvegan)
 library(patchwork)
 library(broom)
+library(tagger)
+library(glue)
+library(Hmisc)
 
 tar_option_set(packages = c("dataDownloader", "tidyverse", "lubridate", "readxl", "traitstrap", "vegan", "ggvegan", "broom", "patchwork", "ape", "nlme", "lme4", "broom.mixed", "MuMIn", "ggpubr", "ggfortify", "ggpattern"))
 
 ## Main figures
 
-# Fig 1 NMDS
-tar_load(Fig_1_CommunityOrdination)
-ggsave("output/Fig_1_NMDS.png", Fig_1_CommunityOrdination, dpi = 300, height = 2.5, width = 6)
+# Fig 1 Species PCA
+tar_load(Fig_1_Community_PCA)
+ggsave("output/Fig_1_Community_PCA.pdf", Fig_1_Community_PCA, dpi = 600, height = 12, width = 10)
 
-# Fig 2 Trait mean
-tar_load(Fig_2_trait_mean)
-ggsave("output/Fig_2_trait_mean.png", Fig_2_trait_mean, dpi = 300, height = 7, width = 10)
+
+# Fig 2 Trait PCA
+tar_load(Fig_2_Trait_PCA)
+ggsave("output/Fig_2_Trait_PCA.pdf", Fig_2_Trait_PCA, dpi = 600, height = 12, width = 10)
+
 
 # Fig 3 Specific - fixed mean
 tar_load(Fig_3_specific_fixed)
-ggsave("output/Fig_3_specific_fixed.png", Fig_3_specific_fixed, dpi = 300, height = 7, width = 10)
+ggsave("output/Fig_3_Specific_fixed.pdf", Fig_3_specific_fixed, dpi = 600, height = 7, width = 10)
 
 # Fig 4 C-fluxes
 tar_load(Fig_4_Fluxes)
-ggsave("output/Fig_4_Fluxes.png", Fig_4_Fluxes, dpi = 300, height = 10, width = 10)
+ggsave("output/Fig_4_Fluxes.pdf", Fig_4_Fluxes, dpi = 600, height = 10, width = 10)
 
 
 ## Appendix
 
 # Fig S1 Climate
 tar_load(Fig_S1_ClimatePlot)
-ggsave("output/Fig_S1_climate.png", Fig_S1_ClimatePlot, dpi = 300, height = 6, width = 8)
+ggsave("output/Fig_S1_climate.pdf", Fig_S1_ClimatePlot, dpi = 600, height = 6, width = 8)
 
 # Fig S2 Microclimate
 tar_load(Fig_S2_Microclimate)
-ggsave("output/Fig_S2_micrclimate.png", Fig_S2_Microclimate, dpi = 300, height = 3, width = 6)
+ggsave("output/Fig_S2_Microclimate.pdf", Fig_S2_Microclimate, dpi = 600, height = 4, width = 6)
 
-# Fig S3 Change in community metrics
-tar_load(Fig_S3_metric_change)
-ggsave("output/Fig_S3_comm_metrics.png", Fig_S3_metric_change, dpi = 300, height = 8, width = 6)
+# Fig S3 Canopy height
+tar_load(Fig_S3_CanopyHeight)
+ggsave("output/Fig_S3_CanopyHeight.pdf", Fig_S3_CanopyHeight, dpi = 600, height = 4, width = 5)
 
-# Fig S4 Canopy height
-tar_load(Fig_S4_CanopyHeight)
-ggsave("output/Fig_S4_CanopyHeight.png", Fig_S4_CanopyHeight, dpi = 300, height = 4, width = 5)
+# Fig S4 Change in community metrics
+tar_load(Fig_S4_metric_change)
+ggsave("output/Fig_S4_Comm_metrics.pdf", Fig_S4_metric_change, dpi = 600, height = 8, width = 7)
 
-# Table SXX
+# Fig S5 Trait mean
+tar_load(Fig_S5_trait_mean)
+ggsave("output/Fig_S5_trait_mean.pdf", Fig_S5_trait_mean, dpi = 600, height = 7, width = 10)
+
+# Table S3
 tar_load(Anova_Trait_Tidy)
-Anova_Trait_Tidy |> print(n = Inf)
+Anova_Trait_Tidy |>
   mutate(Trait = recode(Trait,
                         "SLA_cm2_g" = "SLA",
                         "Leaf_Area_cm2" = "Leaf Area",
@@ -71,19 +80,18 @@ Anova_Trait_Tidy |> print(n = Inf)
   arrange(Trait) %>%
   writexl::write_xlsx(., "output/Anova_Trait_Tidy.xlsx")
 
-
-# Fig S5 PCA
-tar_load(Fig_5_pca_plot)
-ggsave("output/Fig_S5_pca.png", Fig_5_pca_plot, dpi = 300, height = 12, width = 10)
-
-# Table SX
+# Table S5
 tar_load(itv_importance)
 writexl::write_xlsx(itv_importance, "output/itv_importance.xlsx")
 
+# Fig S6 Variance partitioning
+tar_load(Fig_S6_varpart)
+ggsave("output/Fig_S6_Varpart.pdf", Fig_S6_varpart, dpi = 600, height = 8, width = 8)
+
 # Fig S7 Mean fluxes
 tar_load(Fig_S7_Mean_fluxes)
-ggsave("output/Fig_S7_mean_fluxes.jpg", Fig_S7_Mean_fluxes, height = 3.5, width = 10)
+ggsave("output/Fig_S7_mean_fluxes.pdf", Fig_S7_Mean_fluxes, dpi = 600, height = 8, width = 8)
 
 # Fig S8 Effect size fluxes
 tar_load(Fig_S8_Effect_size)
-ggsave("output/Fig_S8_Effect_size.jpg", Fig_S8_Effect_size, height = 10, width = 13)
+ggsave("output/Fig_S8_Effect_size.pdf", Fig_S8_Effect_size, dpi = 600, height = 10, width = 13)
