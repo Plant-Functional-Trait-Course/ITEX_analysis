@@ -11,7 +11,7 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
     filter(length > 0.7) |>
     select(Label, length)
 
-  p1 = pca_sp[[1]] |>
+  p1 <- pca_sp[[1]] |>
     mutate(Treatment = recode(Treatment, CTL = "Control", OTC = "Warming")) |>
     ggplot(aes(x = PC1, y = PC2, colour = Site)) +
     geom_point(aes(size = ifelse(Year == min(as.numeric(Year)), "First", "Other"), shape = Treatment)) +
@@ -25,103 +25,76 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
     scale_shape_manual(values = c(1, 17)) +
 
     ## arrows
-    geom_text(data = pca_sp[[2]] |>
-                mutate(Label = capitalize(Label)) |>
-                inner_join(species, by = "Label") |>
-                mutate(Label = if_else(Label == "Unidentified liverwort sp", "Liverwort sp", Label)),
-              aes(x = PC1 + case_when(Label == "Festuca rubra" ~ -1,
-                                      Label == "Liverwort sp" ~ -1,
-                                      Label == "Peltigera sp" ~ 0.5,
-                                      Label == "Dicranum sp" ~ 1,
-                                      TRUE ~ 0),
-                  y = PC2 + case_when(PC2 > 0 ~ 0.3,
-                                      Label == "Dicranum sp" ~ 0.1,
-                                      TRUE ~ -0.3),
-                  label = Label), col = 'grey70') +
     geom_segment(data = pca_sp[[2]], aes(x = 0, y = 0, xend = PC1, yend = PC2),
                  arrow=arrow(length=unit(0.2,"cm")),
                  alpha = 0.75, color = 'grey70') +
-
-    # stats
-    geom_text(aes(x = -2.5, y = 1, label = "T x H*** + H x Y***"), colour = "black") +
-
-    xlim(-3, 3.8) +
-    labs(x = glue("PCA1 ({round(e_B[1] * 100, 1)}%)"),
-         y = glue("PCA1 ({round(e_B[2] * 100, 1)}%)"),
-         tag = "A") +
     theme_bw() +
     theme(text = element_text(size = 13),
-          legend.position = "top",
           legend.box="vertical",
+          legend.position = "none",
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank())
+
+
+    p_all <- p1 +
+      labs(x = glue("PCA1 ({round(e_B[1] * 100, 1)}%)"),
+           y = glue("PCA1 ({round(e_B[2] * 100, 1)}%)"),
+           tag = "A") +
+      xlim(-3, 3.8) +
+      # species names
+      geom_text(data = pca_sp[[2]] |>
+                  mutate(Label = capitalize(Label)) |>
+                  inner_join(species, by = "Label") |>
+                  mutate(Label = if_else(Label == "Unidentified liverwort sp", "Liverwort sp", Label)),
+                aes(x = PC1 + case_when(Label == "Festuca rubra" ~ -1,
+                                        Label == "Liverwort sp" ~ -1,
+                                        Label == "Peltigera sp" ~ 0.5,
+                                        Label == "Dicranum sp" ~ 1,
+                                        TRUE ~ 0),
+                    y = PC2 + case_when(PC2 > 0 ~ 0.3,
+                                        Label == "Dicranum sp" ~ 0.1,
+                                        TRUE ~ -0.3),
+                    label = Label), col = 'black') +
+      # stats
+      geom_text(aes(x = -2.5, y = 1, label = "T x H*** + H x Y***"), colour = "black") +
+      theme(legend.position = "top")
+
 
   # snowbed
   eig_sb <- eigenvals(pca_sp_sb[[3]])/sum(eigenvals(pca_sp_sb[[3]]))
 
-  p_sb <- pca_sp_sb[[1]] |>
-    ggplot(aes(x = PC1, y = PC2)) +
-    geom_point(aes(size = ifelse(Year == min(as.numeric(Year)), "First", "Other"), shape = Treatment), colour = "blue") +
-    geom_path(aes(linetype = Treatment, group = PlotID), colour = "blue") +
-    scale_size_discrete(name = "Year", range = c(1.5, 3), limits = c("Other", "First"), breaks = c("First", "Other")) +
-    scale_linetype_manual(values = c("dashed", "solid")) +
-    scale_shape_manual(values = c(1, 17)) +
+  p_sb <- p1 %+% (pca_sp_sb[[1]]) +
     geom_text(aes(x = 1, y = -Inf, label = "Y***"), vjust = -0.3, size = 5, colour = "black") +
     labs(x = glue("PCA1 ({round(eig_sb[1] * 100, 1)}%)"),
          y = glue("PCA1 ({round(eig_sb[2] * 100, 1)}%)"),
          title = "Snowbed",
-         tag = "B") +
-    theme_bw() +
-    theme(text = element_text(size = 13),
-          legend.position = "none",
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
+         tag = "B")
 
 
   # Cassiope heath
   eig_ch <- eigenvals(pca_sp_ch[[3]])/sum(eigenvals(pca_sp_ch[[3]]))
 
-  p_ch <- pca_sp_ch[[1]] |>
-    ggplot(aes(x = PC1, y = PC2)) +
-    geom_point(aes(size = ifelse(Year == min(as.numeric(Year)), "First", "Other"), shape = Treatment), colour = "forestgreen") +
-    geom_path(aes(linetype = Treatment, group = PlotID), colour = "forestgreen") +
-    scale_size_discrete(name = "Year", range = c(1.5, 3), limits = c("Other", "First"), breaks = c("First", "Other")) +
-    scale_linetype_manual(values = c("dashed", "solid")) +
-    scale_shape_manual(values = c(1, 17)) +
+  p_ch <- p1 %+% (pca_sp_ch[[1]]) +
     geom_text(aes(x = 1, y = -Inf, label = "T*** + Y*"), vjust = -0.3, size = 5, colour = "black") +
+    scale_color_manual(values = "forestgreen") +
     labs(x = glue("PCA1 ({round(eig_ch[1] * 100, 1)}%)"),
          y = glue("PCA1 ({round(eig_ch[2] * 100, 1)}%)"),
          title = expression(paste(italic(Cassiope), " heath")),
-         tag = "C") +
-    theme_bw() +
-    theme(text = element_text(size = 13),
-          legend.position = "none",
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
+         tag = "C")
 
 
   # Dryas heath
   eig_dh <- eigenvals(pca_sp_dh[[3]])/sum(eigenvals(pca_sp_dh[[3]]))
 
-  p_dh <- pca_sp_dh[[1]] |>
-    ggplot(aes(x = PC1, y = PC2)) +
-    geom_point(aes(size = ifelse(Year == min(as.numeric(Year)), "First", "Other"), shape = Treatment), colour = "orange") +
-    geom_path(aes(linetype = Treatment, group = PlotID), colour = "orange") +
-    scale_size_discrete(name = "Year", range = c(1.5, 3), limits = c("Other", "First"), breaks = c("First", "Other")) +
-    scale_linetype_manual(values = c("dashed", "solid")) +
-    scale_shape_manual(values = c(1, 17)) +
+  p_dh <- p1 %+% (pca_sp_dh[[1]]) +
     geom_text(aes(x = 2, y = -Inf, label = "T* + Y***"), vjust = -0.3, size = 5, colour = "black") +
+    scale_color_manual(values = "orange") +
     labs(x = glue("PCA1 ({round(eig_dh[1] * 100, 1)}%)"),
          y = glue("PCA1 ({round(eig_dh[2] * 100, 1)}%)"),
          title = expression(paste(italic(Dryas), " heath")),
-         tag = "D") +
-    theme_bw() +
-    theme(text = element_text(size = 13),
-          legend.position = "none",
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
+         tag = "D")
 
-  pca_species <- p1 / (p_sb + p_ch + p_dh) + plot_layout(height = c(3, 1))
+  pca_species <- p_all / (p_sb + p_ch + p_dh) + plot_layout(height = c(3, 1))
 
   return(pca_species)
 
@@ -133,16 +106,19 @@ make_height_figure <- function(Height){
 
   canopy_height_figure <- Height |>
     mutate(Treatment = recode(Treatment, CTL = "Control", OTC = "Warming"),
-           Site = recode(Site, CH = "Cassiope heath", DH = "Dryas heath", SB = "Snowbed"),
-           Site = factor(Site, levels = c("Snowbed", "Cassiope heath", "Dryas heath"))) |>
+           Site = recode(Site, CH = "Cassiope", DH = "Dryas", SB = "Snowbed"),
+           Site = factor(Site, levels = c("Snowbed", "Cassiope", "Dryas"))) |>
     ggplot(aes(x = Site, y = Value, fill = Treatment)) +
     geom_boxplot() +
     scale_fill_manual(values = c("grey", "red")) +
-    labs(y = "Canopy height cm", x = "Habitat Type") +
+    scale_x_discrete("Habitat type",
+                     labels = expression(Snowbed, italic(Cassiope), italic(Dryas))) +
+    labs(y = "Canopy height cm") +
     annotate("text", x = 2, y = 30, label = "T *") +
     annotate("text", x = 3, y = 30, label = "T *") +
     theme_bw() +
-    theme(text = element_text(size = 20))
+    theme(text = element_text(size = 15),
+          legend.position = "top")
 
   return(canopy_height_figure)
 
@@ -170,17 +146,16 @@ community_metrics_figure <- function(Comm_Anova_tidy, Comm_Metric_Change, Comm_t
     mutate(Treatment = recode(Treatment, CTL = "Control", OTC = "Warming")) %>%
     group_by(response) %>%
     mutate(y_max = max(dist), y_min = min(dist)) %>%
-    mutate(Site = recode(Site, CH = "Cassiope heath", DH = "Dryas heath", SB = "Snowbed"),
-           Site = factor(Site, levels = c("Snowbed", "Cassiope heath", "Dryas heath"))
-           #Site = factor(Site, levels = c("SB", "CH", "DH"))
-           ) %>%
+    mutate(Site = recode(Site, CH = "Cassiope", DH = "Dryas", SB = "Snowbed"),
+           Site = factor(Site, levels = c("Snowbed", "Cassiope", "Dryas"))) %>%
     ggplot() +
     geom_hline(yintercept = 0, colour = "grey40") +
     geom_boxplot(aes(x = Site, y = dist, fill = Treatment)) +
     scale_fill_manual(values = c("darkgray", "red")) +
-    ylab("Change in Metric") +
-    xlab("Habitat Type") +
-    facet_wrap(~response, scales = "free", ncol = 2) +
+    scale_x_discrete("Habitat type",
+                     labels = expression(Snowbed, italic(Cassiope), italic(Dryas))) +
+    labs( y = "Change in diversity metric") +
+    facet_wrap(~response, scales = "free_y", ncol = 2) +
     theme_bw() +
     theme(text = element_text(size = 15),
           axis.text.x = element_text(size = 10),
