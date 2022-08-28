@@ -51,47 +51,64 @@ calculate_climate_means <- function(climate){
 
 
 # Make Climate Figure
-make_climate_figure <- function(monthlyTemp, dailyClimate){
+make_climate_figure <- function(Monthly_Temp, Daily_Climate){
 
-  meta <- monthlyTemp %>%
+  # A: Weather station plot
+  DailyClimatePlot <- Daily_Climate %>%
+    filter(Variable %in% c("Temperature", "WaterContent", "PAR")) %>%
+    mutate(Variable = fct_recode(Variable,
+                                 "PAR~(µmol~m^{-2}*s^{-1})" = "PAR",
+                                 "Temperature~(degree*C)" = "Temperature",
+                                 "Water~Content~(m^3*m^{-1})" = "WaterContent")) |>
+    ggplot() +
+    geom_line(aes(x = Date, y = Value)) +
+    facet_wrap(~ Variable, scales = "free_y",
+               labeller = label_parsed) +
+    labs(x = "", y = NULL) +
+    labs(tag = "A") +
+    theme_bw() +
+    theme(strip.placement = "outside")
+
+
+  # B:
+  meta <- Monthly_Temp %>%
     ungroup() %>%
     distinct(PlotID, Site, Treatment, LoggerLocation)
 
-  MonthlyTemp <- tibble(YearMonth = seq(from = as.Date("2004-09-15"),
+  MonthlyTemp_Fig <- tibble(YearMonth = seq(from = as.Date("2004-09-15"),
                                         to = as.Date("2018-06-15"),
                                         by = "month")) %>%
     crossing(meta) %>%
-    left_join(monthlyTemp, by = c("YearMonth", "PlotID", "Site", "Treatment", "LoggerLocation")) %>%
+    left_join(Monthly_Temp, by = c("YearMonth", "PlotID", "Site", "Treatment", "LoggerLocation")) %>%
     mutate(Year = year(YearMonth),
            Date2 = ymd(paste(2020, month(YearMonth), day(YearMonth))),
            LoggerLocation = factor(LoggerLocation, levels = c("surface", "soil")),
+           LoggerLocation = fct_recode(LoggerLocation,
+                                       "Surface" = "surface",
+                                       "Soil" = "soil"),
+           Site = factor(Site,
+                         levels = c("SB", "CH", "DH")),
+           Site = fct_recode(Site,
+                             "Snowbed" = "SB",
+                             "italic(Cassiope)~heath" = "CH",
+                             "italic(Dryas)~heath" = "DH"),
            Treatment = recode(Treatment, CTL = "Control", OTC = "Warming")) %>%
     filter(Year %in% c(2004, 2005, 2015:2018)) %>%
     ggplot(aes(x = Date2, y = Value, group = interaction(Year, PlotID), colour = as.factor(Year), linetype = Treatment)) +
     geom_line() +
-    labs(x = "", y = "Monthly temperature in °C") +
+    labs(x = "", y = "Mean monthly temperature (°C)") +
     scale_x_date(date_labels = "%b") +
     scale_linetype_manual(values = c("dashed", "solid")) +
-    labs(tag = "B") +
-    facet_grid(LoggerLocation ~ Site) +
+    scale_colour_brewer(palette = "Dark2") +
+    labs(tag = "B", colour = "Year") +
+    facet_grid(LoggerLocation ~ Site, labeller = label_parsed) +
     theme_bw()
 
-  # Weather station plot
-  DailyClimatePlot <- dailyClimate %>%
-    filter(Variable %in% c("Temperature", "WaterContent", "PAR")) %>%
-    ggplot() +
-    geom_line(aes(x = Date, y = Value)) +
-    facet_wrap(~ Variable, scales = "free_y",
-               #strip.position = "left",
-               labeller = as_labeller(c(PAR = "PAR uE", Temperature = "Temperature °C", WaterContent = "Water Content m³/m³"))) +
-    labs(x = "", y = NULL) +
-    labs(tag = "A") +
-    theme_bw() +
-    theme(strip.background = element_blank(),
-          strip.placement = "outside")
 
-  DailyClimatePlot / MonthlyTemp
-  #FinalItexPlot <- cowplot::plot_grid(DailyClimatePlot, MonthlyTemp, nrow = 2, scale = c(0.9, 1))
+
+
+  DailyClimatePlot / MonthlyTemp_Fig
+
 }
 
 
