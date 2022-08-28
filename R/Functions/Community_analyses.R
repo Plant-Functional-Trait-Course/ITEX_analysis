@@ -85,8 +85,8 @@ community_t_test <- function(Comm_Metric_Change){
               Sig = ifelse(P < 0.05, "*", ifelse(P<0.1 & P > 0.05, "+", "")),
               MaxWidth = max(dist)) %>%
     ungroup() %>%
-    mutate(Site = recode(Site, CH = "Cassiope heath", DH = "Dryas heath", SB = "Snowbed"),
-           Site = factor(Site, levels = c("Snowbed", "Cassiope heath", "Dryas heath")),
+    mutate(Site = recode(Site, CH = "Cassiope", DH = "Dryas", SB = "Snowbed"),
+           Site = factor(Site, levels = c("Snowbed", "Cassiope", "Dryas")),
            Treatment = recode(Treatment, CTL = "Control", OTC = "Warming"))
 
   return(t_test)
