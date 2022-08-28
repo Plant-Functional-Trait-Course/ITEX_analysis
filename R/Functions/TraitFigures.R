@@ -62,8 +62,8 @@ make_itv_figure <- function(Trait_Mean){
 
   itv_plot <- traitMean %>%
     ggplot() +
-    geom_boxplot(aes(x = Site, y = itv_diff, fill = Treatment)) +
     geom_hline(aes(yintercept = 0), colour = "grey40") +
+    geom_boxplot(aes(x = Site, y = itv_diff, fill = Treatment)) +
     geom_text(aes(label = Sig, y = Inf, x = Site, group = Treatment), vjust = 1.2, position = position_dodge(0.75), data = t_test_itv, size = 4.5) +
     scale_fill_manual(values = c("darkgray", "red")) +
     scale_y_continuous(expand = expansion(mult = c(0.1, 0.35))) +
@@ -94,14 +94,15 @@ make_trait_pca_figure <- function(trait_pca_all, trait_pca_SB, trait_pca_CH, tra
     mutate(Site = recode(Site, CH = "Cassiope heath", DH = "Dryas heath", SB = "Snowbed"))
 
   p1 <- ggplot(trait_data, aes(x = PC1, y = PC2, colour = Site)) +
-    geom_point(aes(shape = Treatment), size = 3) +
-    coord_equal() +
-    scale_shape_manual(values = c(1, 17),
-                       labels = c("Control", "Warming")) +
     # arrows
     geom_segment(data = pca_traits, aes(x = 0, y = 0, xend = PC1, yend = PC2),
                  arrow=arrow(length=unit(0.2,"cm")),
                  alpha = 0.75, color = 'grey70') +
+    # points
+    geom_point(aes(shape = Treatment), size = 3) +
+    coord_equal() +
+    scale_shape_manual(values = c(1, 17),
+                       labels = c("Control", "Warming")) +
     theme_bw() +
     theme(text = element_text(size = 13),
           legend.position = "none",

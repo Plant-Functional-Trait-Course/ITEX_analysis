@@ -14,6 +14,11 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
   p1 <- pca_sp[[1]] |>
     mutate(Treatment = recode(Treatment, CTL = "Control", OTC = "Warming")) |>
     ggplot(aes(x = PC1, y = PC2, colour = Site)) +
+    ## arrows
+    geom_segment(data = pca_sp[[2]], aes(x = 0, y = 0, xend = PC1, yend = PC2),
+                 arrow=arrow(length=unit(0.2,"cm")),
+                 alpha = 0.75, color = 'grey70') +
+    # points and path
     geom_point(aes(size = ifelse(Year == min(as.numeric(Year)), "First", "Other"), shape = Treatment)) +
     geom_path(aes(linetype = Treatment, group = PlotID)) +
     coord_equal() +
@@ -24,10 +29,6 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
     scale_linetype_manual(values = c("dashed", "solid")) +
     scale_shape_manual(values = c(1, 17)) +
 
-    ## arrows
-    geom_segment(data = pca_sp[[2]], aes(x = 0, y = 0, xend = PC1, yend = PC2),
-                 arrow=arrow(length=unit(0.2,"cm")),
-                 alpha = 0.75, color = 'grey70') +
     theme_bw() +
     theme(text = element_text(size = 13),
           legend.box="vertical",
