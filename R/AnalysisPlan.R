@@ -10,7 +10,6 @@ AnalysisPlan <- list(
     command = calc_comm_metrics(Community)
   ),
 
-
   # change in community metrics over time
   tar_target(
     name = Comm_Metric_Change,
@@ -21,7 +20,6 @@ AnalysisPlan <- list(
     name = Comm_t_Test,
     command = community_t_test(Comm_Metric_Change)
   ),
-
 
   # Community ANOVA and tidy results
   tar_target(
@@ -35,6 +33,7 @@ AnalysisPlan <- list(
       )
   ),
 
+  # tidy results
   tar_target(
     name = Comm_Anova_tidy,
     command = Comm_Anova %>%
@@ -43,7 +42,7 @@ AnalysisPlan <- list(
   ),
 
 
-  # Species PCA
+  # Community PCA
   # wide community data with rare species removed
   tar_target(
     name = comm_wide,
@@ -247,7 +246,7 @@ AnalysisPlan <- list(
   ),
 
 
-  #### plot 3: mean trait values by plot ####
+  #### plot S5: mean trait values by plot ####
   # Anova for traits
   tar_target(
     name = Anova_Trait,
@@ -295,7 +294,7 @@ AnalysisPlan <- list(
   ),
 
 
-  #### Climate data ####
+  #### CLIMATE DATA ####
   # monthly temp
   tar_target(
     name = Monthly_Temp,
