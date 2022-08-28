@@ -23,9 +23,6 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
     geom_path(aes(linetype = Treatment, group = PlotID)) +
     coord_equal() +
     scale_size_discrete(name = "Year", range = c(1.5, 3), limits = c("Other", "First"), breaks = c("First", "Other")) +
-    scale_color_manual(name = "Habitat type",
-                       values = c("blue", "forestgreen", "orange"),
-                       labels = c("Snowbed", "Cassiope heath", "Dryas heath")) +
     scale_linetype_manual(values = c("dashed", "solid")) +
     scale_shape_manual(values = c(1, 17)) +
 
@@ -41,6 +38,9 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
       labs(x = glue("PCA1 ({round(e_B[1] * 100, 1)}%)"),
            y = glue("PCA2 ({round(e_B[2] * 100, 1)}%)"),
            tag = "A") +
+      scale_color_manual(name = "Habitat type",
+                         values = c("blue", "forestgreen", "orange"),
+                         labels = expression(Snowbed, italic(Cassiope)~heath, italic(Dryas)~heath)) +
       xlim(-3, 3.8) +
       # species names
       geom_text(data = pca_sp[[2]] |>
