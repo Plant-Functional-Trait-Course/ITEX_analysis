@@ -36,7 +36,7 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
                                guide = guide_legend(override.aes = list(pattern_spacing = 0.005))) +
     geom_hline(yintercept = 0, colour = "grey40") +
     scale_y_continuous(limits = c(-10, 70), breaks = seq(-10, 70, by = 10)) +
-    labs(x = "", y = "Explained variance %", title = "turnover", tag = "A") +
+    labs(x = "", y = "Explained variance %", title = "Turnover", tag = "A") +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -66,15 +66,12 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
                                guide = guide_legend(override.aes = list(pattern_spacing = 0.005))) +
     geom_hline(yintercept = 0, colour = "grey40") +
     scale_y_continuous(limits = c(-10, 70), breaks = seq(-10, 70, by = 10)) +
-    labs(x = "", y = "", title = "turnover + ITV", tag = "B") +
+    labs(x = "", y = "", title = "Turnover + ITV", tag = "B") +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           axis.text = element_text(size = 13),
           axis.title = element_text(size = 14))
-          #legend.title=element_text(size=13),
-          #legend.text=element_text(size=12))
-          #legend.position = c(0.65,0.85))
 
 
   # Variance explained by traits
@@ -85,8 +82,7 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
     ggplot(aes(x = Cflux, y = Var.exp * 100, fill = ITV)) +
     geom_col(position = "stack") +
     scale_fill_manual(values = c("grey20", "grey70"),
-                      #limits = c("ITV", "noITV"),
-                      labels = c("intra", "inter"),
+                      labels = c("Intraspecific", "Interspecific"),
                       name = "Trait variation") +
     geom_hline(yintercept = 0, colour = "grey40") +
     labs(x = "", y = "Explained variance %", tag = "C") +
@@ -181,7 +177,7 @@ make_soil_microclimate_figure <- function(Flux_and_Traits){
     scale_fill_manual(values = c('gray70', 'red')) +
     scale_x_discrete("Habitat type",
                      labels = expression(Snowbed, italic(Cassiope), italic(Dryas))) +
-    labs(y = "Value") +
+    labs(y = "") +
     facet_wrap(~ variable, scales = "free_y") +
     theme_bw() +
     theme(text = element_text(size = 15),
@@ -217,6 +213,7 @@ make_flux_mean_figures <- function(Flux_and_Traits, soil_resp){
                tag_suffix = "", ) +
     theme_bw() +
     theme(tagger.panel.tag.background = element_blank(),
+          text = element_text(size = 15),
           panel.spacing = unit(0.8, "cm"),
           legend.position = "top")
 
@@ -242,6 +239,7 @@ make_flux_mean_figures <- function(Flux_and_Traits, soil_resp){
                  tag_suffix = "") +
       theme_bw() +
       theme(legend.position = "none",
+            text = element_text(size = 15),
             tagger.panel.tag.background = element_blank())
 
 
