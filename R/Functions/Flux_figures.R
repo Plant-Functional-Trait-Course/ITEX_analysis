@@ -170,19 +170,22 @@ make_soil_microclimate_figure <- function(Flux_and_Traits){
   microclimate <- Flux_and_Traits %>%
   select(Site, PlotID, Treatment, SoilTemp, SoilMoist) |>
   pivot_longer(cols = c(SoilTemp, SoilMoist), names_to = "variable", values_to = "value") |>
-  mutate(Site = factor(Site, levels = c("SB", "CH", "DH")),
+  mutate(Site = recode(Site, CH = "Cassiope", DH = "Dryas", SB = "Snowbed"),
+         Site = factor(Site, levels = c("Snowbed", "Cassiope", "Dryas")),
          Treatment = recode(Treatment, CTL = "Control", OTC = "Warming"),
          variable = recode(variable, SoilTemp = "Soil temperature (°C)", SoilMoist = "Soil moisture (%)"),
          variable = factor(variable, levels = c("Soil temperature (°C)", "Soil moisture (%)"))) |>
   ggplot(aes(x = Site, y = value, fill = Treatment)) +
-  geom_boxplot() +
-  scale_size_manual(values=c(3,3,3)) +
-  scale_fill_manual(values = c('gray70', 'red')) +
-  labs(x = "Habitat type") +
-  #ylab(bquote('NEE ('*mu~'mol' ~CO[2]~ m^-2~s^-1*')')) +
-  #ylim(-9, 0.5) +
-  facet_wrap(~ variable, scales = "free_y") +
-  theme_bw()
+    geom_boxplot() +
+    scale_size_manual(values = c(3,3,3)) +
+    scale_fill_manual(values = c('gray70', 'red')) +
+    scale_x_discrete("Habitat type",
+                     labels = expression(Snowbed, italic(Cassiope), italic(Dryas))) +
+    labs(y = "Value") +
+    facet_wrap(~ variable, scales = "free_y") +
+    theme_bw() +
+    theme(text = element_text(size = 15),
+          legend.position = "top")
 
   return(microclimate)
 }
@@ -195,7 +198,8 @@ make_flux_mean_figures <- function(Flux_and_Traits, soil_resp){
   flux_means <- Flux_and_Traits %>%
     select(Site, PlotID, Treatment, NEE_ln, ER_ln, GPP700) |>
     pivot_longer(cols = c(NEE_ln:GPP700), names_to = "variable", values_to = "value") |>
-    mutate(Site = factor(Site, levels = c("SB", "CH", "DH")),
+    mutate(Site = recode(Site, CH = "Cassiope", DH = "Dryas", SB = "Snowbed"),
+           Site = factor(Site, levels = c("Snowbed", "Cassiope", "Dryas")),
            variable = factor(variable, levels = c("NEE_ln", "GPP700", "ER_ln")),
            Treatment = recode(Treatment, CTL = "Control", OTC = "Warming")) |>
     mutate(variable2 = factor(variable,
@@ -204,20 +208,17 @@ make_flux_mean_figures <- function(Flux_and_Traits, soil_resp){
                                          "Reco~(µmol~CO[2]~m^{-2}~s^{-1})"))) |>
     ggplot(aes(x = Site, y = value, fill = Treatment)) +
     geom_boxplot() +
-    scale_size_manual(values=c(3,3,3)) +
+    scale_size_manual(values = c(3, 3, 3)) +
     scale_fill_manual(values = c('gray70', 'red')) +
-    labs(x = "") +
-    #ylab(bquote('NEE ('*mu~'mol' ~CO[2]~ m^-2~s^-1*')')) +
-    #ylim(-9, 0.5) +
+    scale_x_discrete(labels = expression(Snowbed, italic(Cassiope), italic(Dryas))) +
+    labs(x = "", y = "") +
     facet_wrap(~ variable2, scales = "free_y", labeller = label_parsed, nrow = 2) +
-    tag_facets(tag_levels = c("A", "B", "C"),
+    tag_facets(tag_pool = c("A", "B", "C"),
                tag_suffix = "", ) +
     theme_bw() +
-    theme(tagger.panel.tag.background = element_rect(fill = "white", colour = "white"),
+    theme(tagger.panel.tag.background = element_blank(),
           panel.spacing = unit(0.8, "cm"),
-          legend.position = "top",
-          #plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm")
-          )
+          legend.position = "top")
 
 
 
@@ -234,20 +235,19 @@ make_flux_mean_figures <- function(Flux_and_Traits, soil_resp){
       scale_size_manual(values = c(3,3)) +
       scale_fill_manual(values = c('grey', 'red'), label = c("Control", "Warming")) +
       labs(x = "", y = "") +
-      #ylab(bquote('PAR-Standardized GPP ('*mu~'mol' ~CO[2]~ m^-2~s^-1*')')) +
-      #ylab(bquote('Rsoil ('*'g' ~CO[2]~ m^-2~day^-1*')')) +
       ylim(-3.5, 0.3) +
       stat_summary(geom = 'text', label = c('a', 'b'), fun = max, vjust = -1, size = 3) +
-      geom_text(aes(x = 0.5, y = 0.1, label = "D"), size = 3) +
+      facet_wrap(~ variable, labeller = label_parsed) +
+      tag_facets(tag_pool = c("D"),
+                 tag_suffix = "") +
       theme_bw() +
       theme(legend.position = "none",
-            plot.margin = unit(c(0.2, 0.2, 0.2, 0.2), "cm")) +
-      facet_wrap(~ variable, labeller = label_parsed)
+            tagger.panel.tag.background = element_blank())
 
 
     layout <- c(
-      area(t = 1, l = 1, b = 4, r = 4),
-      area(t = 3, l = 3, b = 4, r = 4)
+      area(t = 1, l = 1, b = 100, r = 100),
+      area(t = 55, l = 52, b = 100, r = 100)
     )
     flux_mean_plot = flux_means + Rsoil_plot +
       plot_layout(design = layout)
