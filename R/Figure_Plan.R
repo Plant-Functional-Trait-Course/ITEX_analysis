@@ -10,16 +10,16 @@ FigurePlan <- list(
     command = make_sp_pca_figure(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh)
   ),
 
-  # Fig S3 metric change
-  tar_target(
-    name = Fig_S3_metric_change,
-    command = community_metrics_figure(Comm_Anova_tidy, Comm_Metric_Change, Comm_t_Test)
-  ),
-
   # Fig S4 Canopy Height
   tar_target(
-    name = Fig_S4_CanopyHeight,
+    name = Fig_S3_CanopyHeight,
     command = make_height_figure(Height)
+  ),
+
+  # Fig S3 metric change
+  tar_target(
+    name = Fig_S4_metric_change,
+    command = community_metrics_figure(Comm_Anova_tidy, Comm_Metric_Change, Comm_t_Test)
   ),
 
 
@@ -31,7 +31,6 @@ FigurePlan <- list(
     command =  make_trait_pca_figure(trait_pca_all, trait_pca_SB, trait_pca_CH, trait_pca_DH)
 
   ),
-
 
   # Fig 3 Specific vs fixed mean ITV
   tar_target(
@@ -45,7 +44,7 @@ FigurePlan <- list(
     command = make_trait_mean_figure(Anova_Trait_Tidy, Trait_Mean)
   ),
 
-  # Fig S6 Intra vs. turnover
+  # Fig S6 Variance partitioning
   tar_target(
     name = Fig_S6_varpart,
     command = make_intra_vs_inter_figure(Var_Split_Exp, Var_Split)
@@ -56,6 +55,12 @@ FigurePlan <- list(
   tar_target(
     name = Fig_S1_ClimatePlot,
     command = make_climate_figure(Monthly_Temp, Daily_Climate)
+  ),
+
+  # Fig S2 Microclimate
+  tar_target(
+    name = Fig_S2_Microclimate,
+    command = make_soil_microclimate_figure(Flux_and_Traits)
   )
 
 )
