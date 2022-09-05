@@ -65,6 +65,7 @@ make_sp_pca_figure <- function(pca_sp, pca_sp_sb, pca_sp_ch, pca_sp_dh){
   eig_sb <- eigenvals(pca_sp_sb[[3]])/sum(eigenvals(pca_sp_sb[[3]]))
 
   p_sb <- p1 %+% (pca_sp_sb[[1]]) +
+    scale_color_manual(values = "blue") +
     geom_text(aes(x = 1, y = -Inf, label = "Y***"), vjust = -0.3, size = 5, colour = "black") +
     labs(x = glue("PCA1 ({round(eig_sb[1] * 100, 1)}%)"),
          y = glue("PCA2 ({round(eig_sb[2] * 100, 1)}%)"),
