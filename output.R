@@ -11,6 +11,7 @@ library(broom)
 library(tagger)
 library(glue)
 library(Hmisc)
+library(ggpattern)
 
 tar_option_set(packages = c("dataDownloader", "tidyverse", "lubridate", "readxl", "traitstrap", "vegan", "ggvegan", "broom", "patchwork", "ape", "nlme", "lme4", "broom.mixed", "MuMIn", "ggpubr", "ggfortify", "ggpattern"))
 
