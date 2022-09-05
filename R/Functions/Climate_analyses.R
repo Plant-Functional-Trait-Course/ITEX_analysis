@@ -59,7 +59,7 @@ make_climate_figure <- function(Monthly_Temp, Daily_Climate){
     mutate(Variable = fct_recode(Variable,
                                  "PAR~(µmol~m^{-2}*s^{-1})" = "PAR",
                                  "Temperature~(degree*C)" = "Temperature",
-                                 "Water~Content~(m^3*m^{-1})" = "WaterContent")) |>
+                                 "Water~Content~(m^3*m^{-3})" = "WaterContent")) |>
     ggplot() +
     geom_line(aes(x = Date, y = Value)) +
     facet_wrap(~ Variable, scales = "free_y",
