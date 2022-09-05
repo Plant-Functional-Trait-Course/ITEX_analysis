@@ -1,21 +1,18 @@
 #### Flux Figures ####
 
 
-# trait_model_output <- Trait_Model_Output
-# model_selection_output <- Model_Output
-
 ## Figure 4 Carbon fluxes
-make_flux_figure <- function(trait_model_output, model_selection_output){
+make_flux_figure <- function(Trait_Model_Output, Model_Output){
 
-  trait_model_output <- trait_model_output |>
+  Trait_Model_Output <- Trait_Model_Output |>
     mutate(Cflux = recode(Cflux, GPP = "GEP"))
 
-  model_selection_output <- model_selection_output |>
+  Model_Output <- Model_Output |>
     mutate(Cflux = recode(Cflux, GPP = "GEP"))
 
 
   # Variance explained without ITV
-  p1 <- model_selection_output %>%
+  p1 <- Model_Output %>%
     filter(ITV == "no_ITV") %>%
     ggplot(aes(x = Cflux, y = value*100, fill = Variables)) +
     geom_col(position = "stack") +
@@ -36,6 +33,7 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
                                guide = guide_legend(override.aes = list(pattern_spacing = 0.005))) +
     geom_hline(yintercept = 0, colour = "grey40") +
     scale_y_continuous(limits = c(-10, 70), breaks = seq(-10, 70, by = 10)) +
+    scale_x_discrete(labels = c("GEP", expression(R[eco]), "NEE")) +
     labs(x = "", y = "Explained variance %", title = "Interspecific", tag = "A") +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
@@ -45,7 +43,7 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
 
 
   # Variance explained with ITV
-  p2 <- model_selection_output %>%
+  p2 <- Model_Output %>%
     filter(ITV == "ITV") %>%
     ggplot(aes(x = Cflux, y = value*100, fill = Variables)) +
     geom_col(position = "stack") +
@@ -66,7 +64,8 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
                                guide = guide_legend(override.aes = list(pattern_spacing = 0.005))) +
     geom_hline(yintercept = 0, colour = "grey40") +
     scale_y_continuous(limits = c(-10, 70), breaks = seq(-10, 70, by = 10)) +
-    labs(x = "", y = "", title = "Intraspecific", tag = "B") +
+    scale_x_discrete(labels = c("GEP", expression(R[eco]), "NEE")) +
+    labs(x = "", y = "", title = "Inter- and intraspecific", tag = "B") +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -75,19 +74,20 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
 
 
   # Variance explained by traits
-  p3 <- trait_model_output %>%
+  p3 <- Trait_Model_Output %>%
     mutate(ITV = ITV - noITV,
            ITV = abs(ITV)) %>%
     gather(key = ITV, value = Var.exp, noITV:ITV) %>%
     ggplot(aes(x = Cflux, y = Var.exp * 100, fill = ITV)) +
     geom_col(position = "stack") +
     scale_fill_manual(values = c("grey20", "grey70"),
-                      labels = c("Intraspecific", "Interspecific"),
+                      labels = c("Intraspecific", "Intraspecific"),
                       name = "Trait variation") +
     geom_hline(yintercept = 0, colour = "grey40") +
     labs(x = "", y = "Explained variance %", tag = "C") +
     scale_y_continuous(limits = c(-10, 70),
                        breaks = seq(-10, 70, by = 10)) +
+    scale_x_discrete(labels = c("GEP", expression(R[eco]), "NEE")) +
     theme_bw() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -109,12 +109,11 @@ make_flux_figure <- function(trait_model_output, model_selection_output){
 
 ###### USING NOT STANDARDIZED FLUXES!!!!!! #########
 # Effect of single predictors on NEE. GPP and Reco
-#ITEX.Trait_Fluxes <- Flux_and_Traits
 
-make_effect_size_figure <- function(ITEX.Trait_Fluxes){
+make_effect_size_figure <- function(Flux_and_Traits){
 
   #effect of single predictors on fluxes
-  Flux_analyses <- ITEX.Trait_Fluxes %>%
+  Flux_analyses <- Flux_and_Traits %>%
     select(Site, PlotID, Treatment, NEE_ln, ER_ln, GPP700, SoilTemp, SoilMoist, CanTemp_Light, Richness, Evenness, Diversity, Height_cm, Graminoid:Lichen, Evergreen, Decidious, ITV_C:No_ITV_SLA) %>%
     rename(NEE = NEE_ln, GPP = GPP700, Reco = ER_ln) %>%
     pivot_longer(cols = SoilTemp:No_ITV_SLA, names_to = "prediction", values_to = "value") %>%
@@ -126,8 +125,8 @@ make_effect_size_figure <- function(ITEX.Trait_Fluxes){
     mutate(lower = (estimate - std.error * 1.96),
            upper = (estimate + std.error * 1.96),
            overlapp_zero = if_else(p.value < 0.05, "signi", "non-signi"),
-           response = recode(response, GPP = "GEP"),
-           response = factor(response, levels = c("GEP", "Reco", "NEE")))
+           response = recode(response, GPP = "GEP", Reco = "R[eco]"),
+           response = factor(response, levels = c("GEP", "R[eco]", "NEE")))
 
 
   effect_size_figure <- ggplot(Flux_analyses, aes(x = prediction, y = estimate,
@@ -143,7 +142,7 @@ make_effect_size_figure <- function(ITEX.Trait_Fluxes){
     scale_alpha_manual(values = c(0.5, 1)) +
     scale_x_discrete(labels = c("No ITV CN", "No ITV N", "No ITV C", "No ITV P", "No ITV SLA", "No ITV LDMC", "No ITV LT", "No ITV LA", "No ITV Height", "ITV CN", "ITV N", "ITV C", "ITV P", "ITV SLA", "ITV LDMC", "ITV LT", "ITV LA", "ITV Height", "Richness", "Evenness", "Diversity", "Plant Height", "Graminoid", "Forb", "Bryophyte", "Evergreen", "Decidious", "Lichen", "CanTemp Light","SoilTemp", "SoilMoist")) +
     labs(x = "", y = "Effect size") +
-    facet_grid(~response) +
+    facet_grid(~response, labeller = label_parsed) +
     theme(axis.title.x = element_text(size = 14),
           axis.text = element_text(size = 13),
           strip.background = element_rect(colour="black", fill="white"),
@@ -196,12 +195,12 @@ make_flux_mean_figures <- function(Flux_and_Traits, soil_resp){
     pivot_longer(cols = c(NEE_ln:GPP700), names_to = "variable", values_to = "value") |>
     mutate(Site = recode(Site, CH = "Cassiope", DH = "Dryas", SB = "Snowbed"),
            Site = factor(Site, levels = c("Snowbed", "Cassiope", "Dryas")),
-           variable = factor(variable, levels = c("NEE_ln", "GPP700", "ER_ln")),
+           variable = factor(variable, levels = c("GPP700", "ER_ln", "NEE_ln")),
            Treatment = recode(Treatment, CTL = "Control", OTC = "Warming")) |>
     mutate(variable2 = factor(variable,
-                              labels = c("NEE~(µmol~CO[2]~m^{-2}~s^{-1})",
-                                         "PAR~stand~GEP~(µmol~CO[2]~m^{-2}~s^{-1})",
-                                         "R[eco]~(µmol~CO[2]~m^{-2}~s^{-1})"))) |>
+                              labels = c("GEP~(µmol~CO[2]~m^{-2}~s^{-1})",
+                                         "R[eco]~(µmol~CO[2]~m^{-2}~s^{-1})",
+                                         "NEE~(µmol~CO[2]~m^{-2}~s^{-1})"))) |>
     ggplot(aes(x = Site, y = value, fill = Treatment)) +
     geom_boxplot() +
     scale_size_manual(values = c(3, 3, 3)) +
