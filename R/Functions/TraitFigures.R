@@ -243,8 +243,6 @@ make_trait_pca_figure <- function(trait_pca_all, trait_pca_SB, trait_pca_CH, tra
 }
 
 
-# var_split_exp <- Var_Split_Exp
-# var_split <- Var_Split
 ## Figure S6 Trait variance partitioning
 make_intra_vs_inter_figure <- function(Var_Split_Exp, Var_Split){
 
@@ -256,7 +254,9 @@ make_intra_vs_inter_figure <- function(Var_Split_Exp, Var_Split){
     gather(key = variable, value = value, -trait, -level) %>%
     filter(variable != "Covariation", level != "Total", variable != "Total") %>%
     mutate(level = factor(level, levels = c("Habitat", "Treatment", "Habitat:Treatment", "Residuals"))) %>%
-    mutate(level = plyr::mapvalues(level, from = c("Habitat", "Treatment", "Habitat:Treatment", "Residuals"), to = c("H", "T", "HxT", "Resid"))) %>%
+    mutate(level = plyr::mapvalues(level, from = c("Habitat", "Treatment", "Habitat:Treatment", "Residuals"), to = c("H", "T", "HxT", "Resid")),
+           variable = recode(variable, Turnover = "Interspecific"),
+           variable = factor(variable, levels = c("Intraspecific", "Interspecific"))) %>%
     rename(Trait = trait) %>%
     fancy_trait_name_dictionary(.) |>
     ggplot() +
